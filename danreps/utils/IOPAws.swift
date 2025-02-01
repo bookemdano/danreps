@@ -116,6 +116,13 @@ struct IOPAws {
         }
     }
     
+    static func ChangeOwner(owner: String){
+        UserDefaults.standard.set(owner, forKey: "Owner")
+    }
+    static func GetOwner() -> String{
+        return UserDefaults.standard.string(forKey: "Owner") ?? "Dan"
+    }
+    
     public func Test()
     {
         //configureAWS()

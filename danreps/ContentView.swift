@@ -8,17 +8,67 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var _exerSet: ExerSet = .GetDefault()
+    @State private var _date: Date = Date().dateOnly
+    @State private var _newName: String = ""
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, monde!")
+        NavigationView{
+            VStack{
+                HStack{
+                    Button(action: {
+                        Prev()
+                    }){
+                        Text("⏮️")
+                    }
+                    Text(_date.danFormat)
+                        .bold()
+                    Button(action: {
+                        Next()
+                    }){
+                        Text("⏭️")
+                    }
+                }
+                List{
+                    ForEach(_exerSet.ExerItems, id: \.self){ item in
+                        HStack{
+                            Text(item.Name)
+                            Spacer()
+                            Button(action: {
+                                print("Did something")
+                            }){
+                                Text("Change")
+                            }
+                        }
+                    }
+                }
+             
+            }
         }
-        .padding()
+        //.navigationTitle("Reps")
+        .refreshable {
+            Refresh()
+        }
+        .onAppear {
+            Refresh()
+        }
     }
+    func Next()
+    {
+        _date = Calendar.current.date(byAdding: .day, value: 1, to: _date) ?? Date()
+        if (_date > Date()){
+            _date = Date()
+        }
+    }
+    func Prev()
+    {
+        _date = Calendar.current.date(byAdding: .day, value: -1, to: _date) ?? Date()
+    }
+    func Refresh(){
+        Task{
+            _exerSet.Refresh(other: await ExerPersist.Read(), date: _date);
+        }
+    }
+
 }
 
-#Preview {
-    ContentView()
-}

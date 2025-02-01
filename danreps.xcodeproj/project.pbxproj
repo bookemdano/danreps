@@ -18,11 +18,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A92829032D4E6D6C00B0B9C3 /* utils */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = utils;
-			sourceTree = "<group>";
-		};
 		A967BC512D4E6AF5007378D7 /* danreps */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = danreps;
@@ -45,7 +40,6 @@
 		A967BC462D4E6AF5007378D7 = {
 			isa = PBXGroup;
 			children = (
-				A92829032D4E6D6C00B0B9C3 /* utils */,
 				A967BC512D4E6AF5007378D7 /* danreps */,
 				A967BC502D4E6AF5007378D7 /* Products */,
 				D229DFC77F77400389CB1848 /* Pods */,
@@ -96,7 +90,6 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				A92829032D4E6D6C00B0B9C3 /* utils */,
 				A967BC512D4E6AF5007378D7 /* danreps */,
 			);
 			name = danreps;
@@ -235,6 +228,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -296,6 +290,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -324,6 +319,7 @@
 				CODE_SIGN_ENTITLEMENTS = danreps/danreps.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"danreps/Preview Content\"";
 				DEVELOPMENT_TEAM = HCW7AE9SQQ;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -364,6 +360,7 @@
 				CODE_SIGN_ENTITLEMENTS = danreps/danreps.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"danreps/Preview Content\"";
 				DEVELOPMENT_TEAM = HCW7AE9SQQ;
 				ENABLE_HARDENED_RUNTIME = YES;

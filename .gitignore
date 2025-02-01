@@ -61,3 +61,4 @@ fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
 utils/AwsStash.swift
+danreps/utils/AwsStash.swift
