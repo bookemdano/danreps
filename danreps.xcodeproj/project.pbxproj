@@ -18,10 +18,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		A92829032D4E6D6C00B0B9C3 /* utils */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = utils;
+			sourceTree = "<group>";
+		};
 		A967BC512D4E6AF5007378D7 /* danreps */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = danreps;
 			sourceTree = "<group>";
 		};
@@ -42,6 +45,7 @@
 		A967BC462D4E6AF5007378D7 = {
 			isa = PBXGroup;
 			children = (
+				A92829032D4E6D6C00B0B9C3 /* utils */,
 				A967BC512D4E6AF5007378D7 /* danreps */,
 				A967BC502D4E6AF5007378D7 /* Products */,
 				D229DFC77F77400389CB1848 /* Pods */,
@@ -63,7 +67,6 @@
 				19626C2BBDBDCD5D6B7369A5 /* Pods-danreps.debug.xcconfig */,
 				2ADC89E4B61E4233AD98A90B /* Pods-danreps.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -93,6 +96,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				A92829032D4E6D6C00B0B9C3 /* utils */,
 				A967BC512D4E6AF5007378D7 /* danreps */,
 			);
 			name = danreps;
