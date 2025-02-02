@@ -27,4 +27,11 @@ extension Date {
         formatter.dateFormat = "yyyy-MM-dd" // Specify the format
         return formatter.string(from: self)
     }
+    var shortTime: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss" // Specify the format
+        //formatter.timeStyle = .medium
+
+        return formatter.string(from: self)
+    }
 }

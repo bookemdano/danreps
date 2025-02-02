@@ -60,12 +60,17 @@ struct ExerSet : Codable
         return ExerDays.first(where: {$0.Date == date.dateOnly})
     }
     
-    mutating func Crush(date: Date, id: UUID)
+    mutating func Modify(date: Date, id: UUID, offset: Int)
     {
-        let index = ExerDays.firstIndex(where: {$0.Date == date})!
+        let index = ExerDays.firstIndex(where: {$0.Date == date})
         if (index == nil) { return }
-        var oldReps = ExerDays[index].Reps[id] ?? 0
-        ExerDays[index].Reps[id]  = oldReps + 1
+        let oldReps = ExerDays[index!].Reps[id] ?? 0
+        ExerDays[index!].Reps[id]  = oldReps + offset
+    }
+    mutating func AddNote(date: Date, str: String) {
+        let index = ExerDays.firstIndex(where: {$0.Date == date})
+        if (index == nil) { return }
+        ExerDays[index!].Notes.append("\(Date().shortTime) \(str)")
     }
     
     /*
@@ -96,13 +101,14 @@ struct ExerSet : Codable
 
 struct ExerDay : Codable
 {
-
     var Date: Date
     var Reps: [UUID: Int] = [:]
-  
+    var Notes: [String] = []
+
     enum CodingKeys: String, CodingKey {
         case Date
         case Reps
+        case Notes
     }
 }
 
