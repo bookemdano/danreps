@@ -17,7 +17,8 @@ struct ContentView: View {
     @State private var _end: Date? = nil
     @State private var _countdownString: String = "-"
     @State private var _timer: Timer?
-
+    @State private var _showClearConfirmation = false
+ 
     var body: some View {
         NavigationView{
             VStack{
@@ -61,19 +62,24 @@ struct ContentView: View {
                     .padding()
                 Spacer()
                 HStack {
-                    Button(action: {
+                    Button("😴"){
                         AddNote("Rest for 5")
                         startTimer(seconds: 5)
-                    }){
-                        Text("😴")
-                        .font(.system(size: 24))
-                    }
-                    Button(action: {
+                    }.font(.system(size: 24))
+                    Button("↩️"){
                         Undo()
-                    }){
-                        Text("↩️")
-                        .font(.system(size: 24))
-                    }              
+                    }.font(.system(size: 24))
+                    Button("🆑"){
+                        _showClearConfirmation = true
+                    }
+                    .confirmationDialog("Are you sure?", isPresented: $_showClearConfirmation, titleVisibility: .visible) {
+                        Button("Clear Date?", role: .destructive) {
+                            ClearDay(_date)
+                        }
+                        Button("Cancel", role: .cancel) {}
+                    } message: {
+                        Text("This action cannot be undone. Deleting means it never was.")
+                    }
                 }
             }
         }
@@ -135,8 +141,15 @@ struct ContentView: View {
     func AddNote(_ str: String) {
         _exerSet.AddNote(date: _date, str: str)
     }
+    func ClearDay(_ date: Date) {
+        stopTimer()
+        _journal.removeAll()
+        _exerSet.ClearDay(date)
+    }
+    
     func Undo()
     {
+        stopTimer()
         let id = _journal.last
         if (id == nil) { return }
         AddNote("Undo \(_exerSet.GetItem(id: id!).Name)")

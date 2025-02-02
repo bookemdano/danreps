@@ -22,11 +22,7 @@ struct ExerSet : Codable
         ExerItems.append(contentsOf: other.ExerItems)
         
         if (GetDay(date) == nil) {
-            var day = ExerDay(Date: date)
-            ExerItems.forEach { item in
-                day.Reps[item.id] = 0
-            }
-            ExerDays.append(day)
+            ClearDay(date)
         }
     }
     static func GetDefault() -> ExerSet
@@ -71,6 +67,14 @@ struct ExerSet : Codable
         let index = ExerDays.firstIndex(where: {$0.Date == date})
         if (index == nil) { return }
         ExerDays[index!].Notes.append("\(Date().shortTime) \(str)")
+    }
+    mutating func ClearDay(_ date: Date) {
+        ExerDays.removeAll(where: {$0.Date == date})
+        var day = ExerDay(Date: date)
+        ExerItems.forEach { item in
+            day.Reps[item.id] = 0
+        }
+        ExerDays.append(day)
     }
     
     /*

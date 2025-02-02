@@ -14,7 +14,7 @@
 		19626C2BBDBDCD5D6B7369A5 /* Pods-danreps.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-danreps.debug.xcconfig"; path = "Target Support Files/Pods-danreps/Pods-danreps.debug.xcconfig"; sourceTree = "<group>"; };
 		2ADC89E4B61E4233AD98A90B /* Pods-danreps.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-danreps.release.xcconfig"; path = "Target Support Files/Pods-danreps/Pods-danreps.release.xcconfig"; sourceTree = "<group>"; };
 		430643CE8027BF3C5913276A /* Pods_danreps.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_danreps.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		A967BC4F2D4E6AF5007378D7 /* danreps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = danreps.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A967BC4F2D4E6AF5007378D7 /* CrushingIt!.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CrushingIt!.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -50,7 +50,7 @@
 		A967BC502D4E6AF5007378D7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A967BC4F2D4E6AF5007378D7 /* danreps.app */,
+				A967BC4F2D4E6AF5007378D7 /* CrushingIt!.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -94,7 +94,7 @@
 			);
 			name = danreps;
 			productName = danreps;
-			productReference = A967BC4F2D4E6AF5007378D7 /* danreps.app */;
+			productReference = A967BC4F2D4E6AF5007378D7 /* CrushingIt!.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -341,7 +341,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.devfirst.danreps;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "CrushingIt!";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -382,7 +382,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.devfirst.danreps;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "CrushingIt!";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
