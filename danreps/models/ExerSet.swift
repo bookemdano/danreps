@@ -39,16 +39,15 @@ struct ExerSet : Codable
         return ExerSet(ExerDays: [], ExerItems: exerItems)
     }
     
-    func GetItems(date: Date) -> [ExerItem]
+    func GetDayItems(date: Date) -> [ExerItem]
     {
         let reps = GetDay(date)?.Reps
         if (reps == nil) {
             return []
         }
-        let rv = reps!.map({GetItem(id: $0.key)}).sorted(by: {$0.Name < $1.Name})
-        //return ExerItems
-        return rv
+        return reps!.map({GetItem(id: $0.key)}).sorted(by: {$0.Name < $1.Name})
     }
+    
     func GetItem(id: UUID) -> ExerItem{
         return ExerItems.first(where: {$0.id == id}) ?? ExerItem(Name: "Missing")
     }
@@ -60,12 +59,21 @@ struct ExerSet : Codable
     func GetDay(_ date: Date) -> ExerDay?{
         return ExerDays.first(where: {$0.Date == date.dateOnly})
     }
-    mutating func NewMoodItem(name: String, date: Date)
+    
+    mutating func Crush(date: Date, id: UUID)
     {
-        ExerItems.append(ExerItem(Name: name))
+        let index = ExerDays.firstIndex(where: {$0.Date == date})!
+        if (index == nil) { return }
+        var oldReps = ExerDays[index].Reps[id] ?? 0
+        ExerDays[index].Reps[id]  = oldReps + 1
     }
     
-    /*mutating func Move(date: Date, moodItem: ExerItem) dp Rep
+    /*
+     mutating func NewMoodItem(name: String, date: Date)
+     {
+         ExerItems.append(ExerItem(Name: name))
+     }
+     mutating func Move(date: Date, moodItem: ExerItem) dp Rep
     {
         if (!ExerDays.contains(where: {$0.Date == date})) {
             ExerDays.append(ExerDay(Date: date))
@@ -150,7 +158,9 @@ struct ExerPersist {
         do {
             let jsonData = try JSONEncoder().encode(exerSet)
             if let jsonString = String(data: jsonData, encoding: .utf8) {
-                await _iop.Write(dir: "Data", file: JsonName(), content: jsonString)
+                if (await _iop.Write(dir: "Data", file: JsonName(), content: jsonString) == false){
+                    print("Write failed!")
+                }
             }
         } catch {
             print("Error serializing JSON: \(error)")

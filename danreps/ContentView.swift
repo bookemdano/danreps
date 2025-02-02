@@ -30,15 +30,15 @@ struct ContentView: View {
                     }
                 }
                 List{
-                    ForEach(_exerSet.GetItems(date: _date), id: \.self){ item in
+                    ForEach(_exerSet.GetDayItems(date: _date), id: \.self){ item in
                         HStack{
                             Text(item.Name)
                             Spacer()
                             Text(String(_exerSet.GetRepCount(date: _date, id: item.id)))
                             Button(action: {
-                                print("Did something")
+                                Crush(id: item.id)
                             }){
-                                Text("Change")
+                                Text("Crush")
                             }
                         }
                     }
@@ -53,6 +53,11 @@ struct ContentView: View {
         .onAppear {
             Refresh()
         }
+    }
+    func Crush(id: UUID)
+    {
+        _exerSet.Crush(date: _date, id: id)
+        ExerPersist.SaveSync(exerSet: _exerSet)
     }
     func Next()
     {
