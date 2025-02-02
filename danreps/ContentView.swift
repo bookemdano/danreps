@@ -30,10 +30,11 @@ struct ContentView: View {
                     }
                 }
                 List{
-                    ForEach(_exerSet.ExerItems, id: \.self){ item in
+                    ForEach(_exerSet.GetItems(date: _date), id: \.self){ item in
                         HStack{
                             Text(item.Name)
                             Spacer()
+                            Text(String(_exerSet.GetRepCount(date: _date, id: item.id)))
                             Button(action: {
                                 print("Did something")
                             }){

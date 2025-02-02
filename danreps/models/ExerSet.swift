@@ -21,8 +21,12 @@ struct ExerSet : Codable
         ExerItems.removeAll(keepingCapacity: false)
         ExerItems.append(contentsOf: other.ExerItems)
         
-        if (!ExerDays.contains(where: {$0.Date == date})) {
-            ExerDays.append(ExerDay(Date: date))
+        if (GetDay(date) == nil) {
+            var day = ExerDay(Date: date)
+            ExerItems.forEach { item in
+                day.Reps[item.id] = 0
+            }
+            ExerDays.append(day)
         }
     }
     static func GetDefault() -> ExerSet
@@ -37,17 +41,24 @@ struct ExerSet : Codable
     
     func GetItems(date: Date) -> [ExerItem]
     {
-        var reps = ExerDays.first(where: {$0.Date == date})?.Reps
+        let reps = GetDay(date)?.Reps
         if (reps == nil) {
-            reps = [:]
-            ExerItems.forEach { item in
-                reps![item.id] = 0
-            }
+            return []
         }
-        return reps!.map({GetItem(id: $0.key)}).sorted(by: {$0.Name < $1.Name})
+        let rv = reps!.map({GetItem(id: $0.key)}).sorted(by: {$0.Name < $1.Name})
+        //return ExerItems
+        return rv
     }
     func GetItem(id: UUID) -> ExerItem{
         return ExerItems.first(where: {$0.id == id}) ?? ExerItem(Name: "Missing")
+    }
+    func GetRepCount(date: Date, id: UUID) -> Int{
+        let day = GetDay(date)
+        if (day == nil) { return 0 }
+        return day!.Reps.first(where: {$0.key == id})?.value ?? 0
+    }
+    func GetDay(_ date: Date) -> ExerDay?{
+        return ExerDays.first(where: {$0.Date == date.dateOnly})
     }
     mutating func NewMoodItem(name: String, date: Date)
     {
@@ -119,7 +130,7 @@ struct ExerPersist {
         let jsonString = content
         if let jsonData = jsonString.data(using: .utf8) {
             do {
-                var rv = try JSONDecoder().decode(ExerSet.self, from: jsonData)
+                let rv = try JSONDecoder().decode(ExerSet.self, from: jsonData)
                 return rv
             } catch {
                 print("Failed to decode JSON: \(error)")
