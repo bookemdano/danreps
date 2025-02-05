@@ -13,82 +13,84 @@ struct ContentView: View {
     @State private var _exerSet: ExerSet = .GetDefault()
     @State private var _date: Date = Date().dateOnly
     @State private var _newName: String = ""
-    @State private var _journal: [UUID] = []
+    @State private var _history: [UUID] = []
     @State private var _end: Date? = nil
     @State private var _countdownString: String = "-"
     @State private var _timer: Timer?
     @State private var _showClearConfirmation = false
  
     var body: some View {
-        NavigationView{
-            VStack{
-                HStack{
-                    Button(action: {
-                        Prev()
-                    }){
-                        Text("⏮️")
-                    }
-                    Text(_date.danFormat)
-                        .bold()
-                    Button(action: {
-                        Next()
-                    }){
-                        Text("⏭️")
-                    }
+        NavigationStack{
+            HStack{
+                Button(action: {
+                    Prev()
+                }){
+                    Text("⏮️")
                 }
-                List{
-                    ForEach(_exerSet.GetDayItems(date: _date), id: \.self){ item in
-                        HStack{
-                            Text(item.Name)
-                            Spacer()
-                            Text(String(_exerSet.GetRepCount(date: _date, id: item.id)))
-                            Button(action: {
-                                Crush(id: item.id)
-                            }){
-                                Text("Crush")
-                            }
-                        }
-                    }
+                Text(_date.danFormat)
+                    .bold()
+                Button(action: {
+                    Next()
+                }){
+                    Text("⏭️")
                 }
-                List{
-                    let notes = _exerSet.GetDay(_date)?.Notes ?? []
-                    ForEach(notes.reversed(), id: \.self){ note in
-                        Text(note)
-                    }
-                }
-                Text(_countdownString)
-                    .font(.system(size: 72, weight: .bold)) // Large Text
-                    .foregroundColor(.green) // Green Color
-                    .padding()
-                Spacer()
-                HStack {
-                    Button("😴"){
-                        AddNote("Rest for 5")
-                        startTimer(seconds: 5)
-                    }.font(.system(size: 24))
-                    Button("↩️"){
-                        Undo()
-                    }.font(.system(size: 24))
-                    Button("🆑"){
-                        _showClearConfirmation = true
-                    }
-                    .confirmationDialog("Are you sure?", isPresented: $_showClearConfirmation, titleVisibility: .visible) {
-                        Button("Clear Date?", role: .destructive) {
-                            ClearDay(_date)
-                        }
-                        Button("Cancel", role: .cancel) {}
-                    } message: {
-                        Text("This action cannot be undone. Deleting means it never was.")
+            }
+            List{
+                ForEach(_exerSet.ExerItems, id: \.self){ item in
+                    HStack{
+                        Text(item.Name)
+                        Spacer()
+                        Text(String(_exerSet.GetRepCount(date: _date, id: item.id)))
+                        Button("💥", action: {Crush(id: item.id )})
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                        
                     }
                 }
             }
-        }
-        //.navigationTitle("Reps")
-        .refreshable {
-            Refresh()
-        }
-        .onAppear {
-            Refresh()
+            List{
+                let notes = _exerSet.GetDay(_date)?.Journal ?? []
+                ForEach(notes.reversed(), id: \.self){ note in
+                    Text(note)
+                }
+            }
+            Text(_countdownString)
+                .font(.system(size: 72, weight: .bold)) // Large Text
+                .foregroundColor(.green) // Green Color
+                .padding()
+            Spacer()
+            HStack {
+                Button("😴"){
+                    AddNote("Rest for 30")
+                    startTimer(seconds: 30)
+                }.font(.system(size: 36))
+                Button("↩️"){
+                    Undo()
+                }.font(.system(size: 36))
+                NavigationLink(destination: MaintView()) {
+                    Text("⚙️")
+                        .font(.system(size: 36))
+                }
+                Button("🆑"){
+                    _showClearConfirmation = true
+                }
+                .confirmationDialog("Are you sure?", isPresented: $_showClearConfirmation, titleVisibility: .visible) {
+                    Button("Clear Date?", role: .destructive) {
+                        ClearDay(_date)
+                    }
+                    Button("Cancel", role: .cancel) {}
+                } message: {
+                    Text("This action cannot be undone. Deleting means it never was.")
+                }
+            }
+            .navigationTitle("Ready to Crush")
+            .refreshable {
+                Refresh()
+            }
+            .onAppear {
+                Refresh()
+            }
         }
     }
     func CountdownString() -> String
@@ -134,28 +136,28 @@ struct ContentView: View {
     {
         _exerSet.Modify(date: _date, id: id, offset: 1)
         AddNote("Crushed \(_exerSet.GetItem(id: id).Name)")
-        _journal.append(id);
+        _history.append(id);
         startTimer(seconds: 60)
-        ExerPersist.SaveSync(exerSet: _exerSet)
+        ExerPersist.SaveSync(_exerSet)
     }
     func AddNote(_ str: String) {
         _exerSet.AddNote(date: _date, str: str)
     }
     func ClearDay(_ date: Date) {
         stopTimer()
-        _journal.removeAll()
+        _history.removeAll()
         _exerSet.ClearDay(date)
     }
     
     func Undo()
     {
         stopTimer()
-        let id = _journal.last
+        let id = _history.last
         if (id == nil) { return }
         AddNote("Undo \(_exerSet.GetItem(id: id!).Name)")
         _exerSet.Modify(date: _date, id: id!, offset: -1)
-        ExerPersist.SaveSync(exerSet: _exerSet)
-        _journal.removeLast()
+        ExerPersist.SaveSync(_exerSet)
+        _history.removeLast()
         _end = nil
     }
     func Next()
@@ -165,12 +167,12 @@ struct ContentView: View {
             return
         }
         _date = newDate
-        _journal.removeAll()
+        _history.removeAll()
     }
     func Prev()
     {
         _date = Calendar.current.date(byAdding: .day, value: -1, to: _date) ?? Date()
-        _journal.removeAll()
+        _history.removeAll()
     }
     func Refresh(){
         Task{

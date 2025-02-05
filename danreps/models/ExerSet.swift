@@ -28,16 +28,16 @@ struct ExerSet : Codable
     static func GetDefault() -> ExerSet
     {
         var exerItems:[ExerItem] = []
-        exerItems.append(ExerItem(Name: "DB Curls"))
-        exerItems.append(ExerItem(Name: "BB Half squat"))
-        exerItems.append(ExerItem(Name: "BB Curls"))
-        exerItems.append(ExerItem(Name: "BB Clean"))
+        exerItems.append(ExerItem(Name: "DB Curls", Reps: 10, Notes: "", PerSide: true))
+        exerItems.append(ExerItem(Name: "BB Half squat", Reps: 15, Notes: "", PerSide: false))
+        exerItems.append(ExerItem(Name: "BB Curls", Reps: 10, Notes: "", PerSide: false))
+        exerItems.append(ExerItem(Name: "BB Clean", Reps: 10, Notes: "", PerSide: false))
         return ExerSet(ExerDays: [], ExerItems: exerItems)
     }
     
     func GetDayItems(date: Date) -> [ExerItem]
     {
-        let reps = GetDay(date)?.Reps
+        let reps = GetDay(date)?.Sets
         if (reps == nil) {
             return []
         }
@@ -45,12 +45,12 @@ struct ExerSet : Codable
     }
     
     func GetItem(id: UUID) -> ExerItem{
-        return ExerItems.first(where: {$0.id == id}) ?? ExerItem(Name: "Missing")
+        return ExerItems.first(where: {$0.id == id}) ?? ExerItem(Name: "Missing", Reps: 1, Notes: "", PerSide: false)
     }
     func GetRepCount(date: Date, id: UUID) -> Int{
         let day = GetDay(date)
         if (day == nil) { return 0 }
-        return day!.Reps.first(where: {$0.key == id})?.value ?? 0
+        return day!.Sets.first(where: {$0.key == id})?.value ?? 0
     }
     func GetDay(_ date: Date) -> ExerDay?{
         return ExerDays.first(where: {$0.Date == date.dateOnly})
@@ -60,19 +60,19 @@ struct ExerSet : Codable
     {
         let index = ExerDays.firstIndex(where: {$0.Date == date})
         if (index == nil) { return }
-        let oldReps = ExerDays[index!].Reps[id] ?? 0
-        ExerDays[index!].Reps[id]  = oldReps + offset
+        let oldReps = ExerDays[index!].Sets[id] ?? 0
+        ExerDays[index!].Sets[id]  = oldReps + offset
     }
     mutating func AddNote(date: Date, str: String) {
         let index = ExerDays.firstIndex(where: {$0.Date == date})
         if (index == nil) { return }
-        ExerDays[index!].Notes.append("\(Date().shortTime) \(str)")
+        ExerDays[index!].Journal.append("\(Date().shortTime) \(str)")
     }
     mutating func ClearDay(_ date: Date) {
         ExerDays.removeAll(where: {$0.Date == date})
         var day = ExerDay(Date: date)
         ExerItems.forEach { item in
-            day.Reps[item.id] = 0
+            day.Sets[item.id] = 0
         }
         ExerDays.append(day)
     }
@@ -106,13 +106,13 @@ struct ExerSet : Codable
 struct ExerDay : Codable
 {
     var Date: Date
-    var Reps: [UUID: Int] = [:]
-    var Notes: [String] = []
+    var Sets: [UUID: Int] = [:]
+    var Journal: [String] = []
 
     enum CodingKeys: String, CodingKey {
         case Date
-        case Reps
-        case Notes
+        case Sets
+        case Journal
     }
 }
 
@@ -125,10 +125,16 @@ struct ExerItem : Codable, Hashable, Identifiable, Comparable
     enum CodingKeys: String, CodingKey {
         case id
         case Name
+        case Reps
+        case Notes
+        case PerSide
     }
 
     var id = UUID() // Automatically generate a unique identifier
     var Name: String
+    var Reps: Int
+    var Notes: String
+    var PerSide: Bool
 }
 struct ExerPersist {
     static let _iop = IOPAws(app: "DanReps")
@@ -156,14 +162,42 @@ struct ExerPersist {
         }
         return ExerSet.GetDefault()
     }
-    static func SaveSync(exerSet: ExerSet)
+    static func Update(id: UUID, name: String, reps: Int, perSide: Bool, notes: String) async
+    {
+        Task{
+            var exerSet = await Read()
+
+            let index = exerSet.ExerItems.firstIndex(where: { $0.id == id})
+            if (index == nil)
+            {
+                let item = ExerItem(Name: name, Reps: reps, Notes: notes, PerSide: perSide)
+                exerSet.ExerItems.append(item)
+            }
+            else
+            {
+                exerSet.ExerItems[index!].Name = name
+                exerSet.ExerItems[index!].Reps = reps
+                exerSet.ExerItems[index!].PerSide = perSide
+                exerSet.ExerItems[index!].Notes = notes
+            }
+
+            await SaveAsync(exerSet)
+        }
+    }
+    static func Remove(id: UUID) async
+    {
+        var exerSet = await Read()
+        exerSet.ExerItems.removeAll(where: { $0.id == id})
+        await SaveAsync(exerSet)
+    }
+    static func SaveSync(_ exerSet: ExerSet)
     {
         Task
         {
-            await SaveAsync(exerSet: exerSet)
+            await SaveAsync(exerSet)
         }
     }
-    static func SaveAsync(exerSet: ExerSet) async
+    static func SaveAsync(_ exerSet: ExerSet) async
     {
         do {
             let jsonData = try JSONEncoder().encode(exerSet)
