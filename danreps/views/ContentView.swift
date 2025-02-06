@@ -18,6 +18,7 @@ struct ContentView: View {
     @State private var _countdownString: String = "-"
     @State private var _timer: Timer?
     @State private var _showClearConfirmation = false
+    @State private var _rapid = GetRapid()
  
     var body: some View {
         NavigationStack{
@@ -55,12 +56,19 @@ struct ContentView: View {
                     Text(note)
                 }
             }
-            Text(_countdownString)
-                .font(.system(size: 72, weight: .bold)) // Large Text
-                .foregroundColor(.green) // Green Color
-                .padding()
-            Spacer()
+            if (_rapid) {
+                Text(_countdownString)
+                    .font(.system(size: 48, weight: .bold)) // Large Text
+                    .foregroundColor(.green) // Green Color
+                    .padding()
+            }
             HStack {
+                Toggle("Rapid", isOn: $_rapid).onChange(of: _rapid) {
+                    ContentView.SetRapid(_rapid)
+                    if (_rapid == false){
+                        stopTimer()
+                    }
+                }
                 Button("😴"){
                     AddNote("Rest for 30")
                     startTimer(seconds: 30)
@@ -74,7 +82,7 @@ struct ContentView: View {
                 }
                 Button("🆑"){
                     _showClearConfirmation = true
-                }
+                }.font(.system(size: 36))
                 .confirmationDialog("Are you sure?", isPresented: $_showClearConfirmation, titleVisibility: .visible) {
                     Button("Clear Date?", role: .destructive) {
                         ClearDay(_date)
@@ -93,10 +101,16 @@ struct ContentView: View {
             }
         }
     }
+    static func SetRapid(_ val: Bool){
+        UserDefaults.standard.set(val, forKey: "Rapid")
+    }
+    static func GetRapid() -> Bool{
+        return UserDefaults.standard.bool(forKey: "Rapid")
+    }
     func CountdownString() -> String
     {
         if (_end == nil) {
-            return "00:00"
+            return "-"
         }
         let timespan = _end!.timeIntervalSince(Date())
         if (timespan <= 0) {
@@ -137,7 +151,9 @@ struct ContentView: View {
         _exerSet.Modify(date: _date, id: id, offset: 1)
         AddNote("Crushed \(_exerSet.GetItem(id: id).Name)")
         _history.append(id);
-        startTimer(seconds: 60)
+        if (_rapid) {
+            startTimer(seconds: 60)
+        }
         ExerPersist.SaveSync(_exerSet)
     }
     func AddNote(_ str: String) {
