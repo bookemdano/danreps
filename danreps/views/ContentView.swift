@@ -56,7 +56,7 @@ struct ContentView: View {
                     Text(note)
                 }
             }
-            if (_rapid) {
+            if (_end != nil) {
                 Text(_countdownString)
                     .font(.system(size: 48, weight: .bold)) // Large Text
                     .foregroundColor(.green) // Green Color
@@ -70,8 +70,10 @@ struct ContentView: View {
                     }
                 }
                 Button("😴"){
-                    AddNote("Rest for 30")
-                    startTimer(seconds: 30)
+                    DNotices.requestNotificationPermission()
+
+                    AddNote("Rest for 5")
+                    startTimer(seconds: 5)
                 }.font(.system(size: 36))
                 Button("↩️"){
                     Undo()
@@ -127,11 +129,12 @@ struct ContentView: View {
         _timer?.invalidate() // Invalidate existing timer if running
         _end = Date().addingTimeInterval(seconds)    // seconds
         _countdownString = CountdownString()
+        DNotices.scheduleNotification("Back at it!", interval: seconds)
         _timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             let remainingTime = _end?.timeIntervalSince(Date()) ?? 0
             _countdownString = CountdownString()
             if remainingTime <= 0 {
-                Alert()
+                //Alert()  // only works in foreground, dnotice only works in background
                 _timer?.invalidate() // Stop when countdown reaches 0
             }
         }
@@ -152,7 +155,7 @@ struct ContentView: View {
         AddNote("Crushed \(_exerSet.GetItem(id: id).Name)")
         _history.append(id);
         if (_rapid) {
-            startTimer(seconds: 60)
+            startTimer(seconds: Double(_exerSet.Interval ?? 60))
         }
         ExerPersist.SaveSync(_exerSet)
     }

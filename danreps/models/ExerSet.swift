@@ -11,16 +11,18 @@ struct ExerSet : Codable
 {
     var ExerDays: [ExerDay]
     var ExerItems: [ExerItem]
+    var Interval: Int? = 60
     enum CodingKeys: String, CodingKey {
         case ExerDays
         case ExerItems
+        case Interval
     }
     mutating func Refresh(other: ExerSet, date: Date){
         ExerDays.removeAll(keepingCapacity: false)
         ExerDays.append(contentsOf: other.ExerDays)
         ExerItems.removeAll(keepingCapacity: false)
         ExerItems.append(contentsOf: other.ExerItems)
-        
+        Interval = other.Interval
         if (GetDay(date) == nil) {
             ClearDay(date)
         }
@@ -55,7 +57,6 @@ struct ExerSet : Codable
     func GetDay(_ date: Date) -> ExerDay?{
         return ExerDays.first(where: {$0.Date == date.dateOnly})
     }
-    
     mutating func Modify(date: Date, id: UUID, offset: Int)
     {
         let index = ExerDays.firstIndex(where: {$0.Date == date})

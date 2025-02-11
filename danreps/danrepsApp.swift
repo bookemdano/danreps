@@ -9,6 +9,9 @@ import SwiftUI
 
 @main
 struct danrepsApp: App {
+    init() {
+        UNUserNotificationCenter.current().delegate = NotificationHandler.shared
+    }
     var body: some Scene {
         WindowGroup {
             ContentView()
