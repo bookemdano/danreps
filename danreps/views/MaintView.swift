@@ -29,7 +29,7 @@ struct MaintView: View {
                 ForEach(_exerSet.ExerItems, id: \.self){ item in
                     NavigationLink(destination: ExerItemView(exerItem: item))
                     {
-                        Text(item.Name)
+                        Text(item.description())
                     }
                 }
             }

@@ -28,7 +28,7 @@ struct ContentView: View {
                 }){
                     Text("⏮️")
                 }
-                Text(_date.danFormat)
+                Text(_date.danFormat + "(\(_exerSet.GetSetCount(date: _date)))")
                     .bold()
                 Button(action: {
                     Next()
@@ -39,7 +39,7 @@ struct ContentView: View {
             List{
                 ForEach(_exerSet.ExerItems, id: \.self){ item in
                     HStack{
-                        Text(item.Name)
+                        Text(item.description())
                         Spacer()
                         Text(String(_exerSet.GetRepCount(date: _date, id: item.id)))
                         Button("💥", action: {Crush(id: item.id )})

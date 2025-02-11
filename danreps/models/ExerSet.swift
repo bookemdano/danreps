@@ -49,6 +49,12 @@ struct ExerSet : Codable
     func GetItem(id: UUID) -> ExerItem{
         return ExerItems.first(where: {$0.id == id}) ?? ExerItem(Name: "Missing", Reps: 1, Notes: "", PerSide: false)
     }
+    func GetSetCount(date: Date) -> Int{
+        let day = GetDay(date)
+        if (day == nil) { return 0 }
+        
+        return day!.Sets.values.reduce(0, +)
+    }
     func GetRepCount(date: Date, id: UUID) -> Int{
         let day = GetDay(date)
         if (day == nil) { return 0 }
@@ -59,8 +65,12 @@ struct ExerSet : Codable
     }
     mutating func Modify(date: Date, id: UUID, offset: Int)
     {
-        let index = ExerDays.firstIndex(where: {$0.Date == date})
-        if (index == nil) { return }
+        var index = ExerDays.firstIndex(where: {$0.Date == date})
+        if (index == nil)
+        {
+            ClearDay(date)
+            index = ExerDays.firstIndex(where: {$0.Date == date})
+        }
         let oldReps = ExerDays[index!].Sets[id] ?? 0
         ExerDays[index!].Sets[id]  = oldReps + offset
     }
@@ -122,7 +132,20 @@ struct ExerItem : Codable, Hashable, Identifiable, Comparable
     static func < (lhs: ExerItem, rhs: ExerItem) -> Bool {
         return lhs.Name < rhs.Name
     }
-    
+    func description() -> String {
+        var rv = "\(Name)"
+        if (Reps != 10){
+            rv = rv + " (\(Reps))"
+        }
+        if (PerSide) {
+            rv = rv + " (2x)"
+        }
+        if (!Notes.isEmpty) {
+            rv = rv + "*"
+        }
+
+        return rv
+    }
     enum CodingKeys: String, CodingKey {
         case id
         case Name
