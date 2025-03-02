@@ -8,6 +8,7 @@
 import SwiftUI
 import AVFoundation
 import AVFAudio
+import DanSwiftLib
 import danrepslib
 
 struct ContentView: View {
@@ -28,7 +29,6 @@ struct ContentView: View {
                     Prev()
                 }){
                     Text("⏮️")
-                    Text(MyLibrary.hello())
                 }
                 Text(_date.danFormat + "(\(_exerSet.GetSetCount(date: _date)))")
                     .bold()

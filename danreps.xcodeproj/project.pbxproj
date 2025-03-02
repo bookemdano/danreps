@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A9D46EC62D74A34800BF6766 /* danrepslib in Frameworks */ = {isa = PBXBuildFile; productRef = A9D46EC52D74A34800BF6766 /* danrepslib */; };
+		A9D46ECA2D74A53200BF6766 /* DanSwiftLib in Frameworks */ = {isa = PBXBuildFile; productRef = A9D46EC92D74A53200BF6766 /* DanSwiftLib */; };
 		E5E7A26661E59BE68C4BACDD /* Pods_danreps.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 430643CE8027BF3C5913276A /* Pods_danreps.framework */; };
 /* End PBXBuildFile section */
 
@@ -16,7 +16,7 @@
 		2ADC89E4B61E4233AD98A90B /* Pods-danreps.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-danreps.release.xcconfig"; path = "Target Support Files/Pods-danreps/Pods-danreps.release.xcconfig"; sourceTree = "<group>"; };
 		430643CE8027BF3C5913276A /* Pods_danreps.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_danreps.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A967BC4F2D4E6AF5007378D7 /* CrushingIt!.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CrushingIt!.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		A9D46EC32D74A2D800BF6766 /* danrepslib */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = danrepslib; sourceTree = "<group>"; };
+		A9D46EC72D74A4EF00BF6766 /* DanSwiftLib */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = DanSwiftLib; path = ../DanSwiftLib; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A9D46EC62D74A34800BF6766 /* danrepslib in Frameworks */,
+				A9D46ECA2D74A53200BF6766 /* DanSwiftLib in Frameworks */,
 				E5E7A26661E59BE68C4BACDD /* Pods_danreps.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -43,7 +43,7 @@
 		A967BC462D4E6AF5007378D7 = {
 			isa = PBXGroup;
 			children = (
-				A9D46EC32D74A2D800BF6766 /* danrepslib */,
+				A9D46EC72D74A4EF00BF6766 /* DanSwiftLib */,
 				A967BC512D4E6AF5007378D7 /* danreps */,
 				A967BC502D4E6AF5007378D7 /* Products */,
 				D229DFC77F77400389CB1848 /* Pods */,
@@ -127,6 +127,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				A9D46EC42D74A34800BF6766 /* XCLocalSwiftPackageReference "danrepslib" */,
+				A9D46EC82D74A53200BF6766 /* XCLocalSwiftPackageReference "../DanSwiftLib" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A967BC502D4E6AF5007378D7 /* Products */;
@@ -427,12 +428,16 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = danrepslib;
 		};
+		A9D46EC82D74A53200BF6766 /* XCLocalSwiftPackageReference "../DanSwiftLib" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../DanSwiftLib;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A9D46EC52D74A34800BF6766 /* danrepslib */ = {
+		A9D46EC92D74A53200BF6766 /* DanSwiftLib */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = danrepslib;
+			productName = DanSwiftLib;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
