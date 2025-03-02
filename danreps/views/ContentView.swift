@@ -8,6 +8,7 @@
 import SwiftUI
 import AVFoundation
 import AVFAudio
+import DanSwiftLib
 
 struct ContentView: View {
     @State private var _exerSet: ExerSet = .GetDefault()

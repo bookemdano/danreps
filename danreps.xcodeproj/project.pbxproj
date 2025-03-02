@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A9D350782D74B21E005549AC /* DanSwiftLib in Frameworks */ = {isa = PBXBuildFile; productRef = A9D350772D74B21E005549AC /* DanSwiftLib */; };
 		E5E7A26661E59BE68C4BACDD /* Pods_danreps.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 430643CE8027BF3C5913276A /* Pods_danreps.framework */; };
 /* End PBXBuildFile section */
 
@@ -30,6 +31,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A9D350782D74B21E005549AC /* DanSwiftLib in Frameworks */,
 				E5E7A26661E59BE68C4BACDD /* Pods_danreps.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -121,6 +123,9 @@
 			);
 			mainGroup = A967BC462D4E6AF5007378D7;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A9D350762D74B21E005549AC /* XCLocalSwiftPackageReference "../DanSwiftLib" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A967BC502D4E6AF5007378D7 /* Products */;
 			projectDirPath = "";
@@ -414,6 +419,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		A9D350762D74B21E005549AC /* XCLocalSwiftPackageReference "../DanSwiftLib" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../DanSwiftLib;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A9D350772D74B21E005549AC /* DanSwiftLib */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DanSwiftLib;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A967BC472D4E6AF5007378D7 /* Project object */;
 }
