@@ -52,7 +52,7 @@ struct MaintView: View {
             }){
                 Text("Save")
             }
-            NavigationLink(destination: ExerItemView(exerItem: ExerItem(Name: "", Reps: 10, Notes: "", PerSide: false))) {
+            NavigationLink(destination: ExerItemView(exerItem: ExerItem(Name: "", Notes: "", PerSide: false))) {
                 Text("New Item").bold()
             }
         }

@@ -21,7 +21,6 @@ struct ExerItemView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var _showDeleteConfirmation = false
     @State var _name: String = ""
-    @State var _reps: String = "10"
     @State var _notes: String = ""
     @State var _perSide: Bool = false
     var body: some View {
@@ -30,12 +29,6 @@ struct ExerItemView: View {
             HStack{
                 Text("Name: ")
                 TextField("Name", text: $_name)
-                    .border(Color.gray)
-            }
-            HStack{
-                Text("Reps: ")
-                TextField("Reps", text: $_reps)
-                    .keyboardType(.numberPad)
                     .border(Color.gray)
             }
             Text("Notes: ")
@@ -81,7 +74,6 @@ struct ExerItemView: View {
         .padding(5)
         .onAppear {
             _name = exerItem.Name
-            _reps = String(exerItem.Reps)
             _perSide = exerItem.PerSide
             _notes = exerItem.Notes
         }
@@ -100,7 +92,7 @@ struct ExerItemView: View {
     func Save()
     {
         Task {
-            await ExerPersist.Update(id: exerItem.id, name: _name, reps: Int(_reps) ?? 1, perSide: _perSide, notes: _notes)
+            await ExerPersist.Update(id: exerItem.id, name: _name, perSide: _perSide, notes: _notes)
             presentationMode.wrappedValue.dismiss()
         }
     }

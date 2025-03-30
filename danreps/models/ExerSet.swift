@@ -30,40 +30,42 @@ struct ExerSet : Codable
     static func GetDefault() -> ExerSet
     {
         var exerItems:[ExerItem] = []
-        exerItems.append(ExerItem(Name: "DB Curls", Reps: 10, Notes: "", PerSide: true))
-        exerItems.append(ExerItem(Name: "BB Half squat", Reps: 15, Notes: "", PerSide: false))
-        exerItems.append(ExerItem(Name: "BB Curls", Reps: 10, Notes: "", PerSide: false))
-        exerItems.append(ExerItem(Name: "BB Clean", Reps: 10, Notes: "", PerSide: false))
+        exerItems.append(ExerItem(Name: "DB Curls", Notes: "", PerSide: true))
+        exerItems.append(ExerItem(Name: "Kettlebells", Notes: "", PerSide: false))
+        exerItems.append(ExerItem(Name: "BB Overhead", Notes: "", PerSide: false))
+        exerItems.append(ExerItem(Name: "BB Curls", Notes: "", PerSide: false))
+        exerItems.append(ExerItem(Name: "BB Bench", Notes: "", PerSide: false))
+        exerItems.append(ExerItem(Name: "BB Clean", Notes: "", PerSide: false))
         return ExerSet(ExerDays: [], ExerItems: exerItems)
     }
     
     func GetDayItems(date: Date) -> [ExerItem]
     {
-        let reps = GetDay(date)?.Sets
+        let reps = GetDay(date)?.ItemSets
         if (reps == nil) {
             return []
         }
-        return reps!.map({GetItem(id: $0.key)}).sorted(by: {$0.Name < $1.Name})
+        return reps!.map({GetItem(id: $0.ItemId)}).sorted(by: {$0.Name < $1.Name})
     }
     
     func GetItem(id: UUID) -> ExerItem{
-        return ExerItems.first(where: {$0.id == id}) ?? ExerItem(Name: "Missing", Reps: 1, Notes: "", PerSide: false)
+        return ExerItems.first(where: {$0.id == id}) ?? ExerItem(Name: "Missing", Notes: "", PerSide: false)
     }
     func GetSetCount(date: Date) -> Int{
         let day = GetDay(date)
         if (day == nil) { return 0 }
         
-        return day!.Sets.values.reduce(0, +)
+        return day!.ItemSets.count
     }
-    func GetRepCount(date: Date, id: UUID) -> Int{
+    func GetSetCount(date: Date, id: UUID) -> Int{
         let day = GetDay(date)
         if (day == nil) { return 0 }
-        return day!.Sets.first(where: {$0.key == id})?.value ?? 0
+        return day!.ItemSets.count(where: {$0.ItemId == id})
     }
     func GetDay(_ date: Date) -> ExerDay?{
         return ExerDays.first(where: {$0.Date == date.dateOnly})
     }
-    mutating func Modify(date: Date, id: UUID, offset: Int)
+    mutating func Add(date: Date, id: UUID, weight: Int, reps: Int)
     {
         var index = ExerDays.firstIndex(where: {$0.Date == date})
         if (index == nil)
@@ -71,8 +73,22 @@ struct ExerSet : Codable
             ClearDay(date)
             index = ExerDays.firstIndex(where: {$0.Date == date})
         }
-        let oldReps = ExerDays[index!].Sets[id] ?? 0
-        ExerDays[index!].Sets[id]  = oldReps + offset
+        let newItem = ItemSet(ItemId: id, Weight: weight, Reps: reps)
+        ExerDays[index!].ItemSets.append(newItem)
+        
+        var itemIndex = ExerItems.firstIndex(where: {$0.id == id})
+        if (itemIndex != nil) {
+            ExerItems[itemIndex!].LastWeight = weight
+            ExerItems[itemIndex!].LastReps = reps
+        }
+    }
+    mutating func Remove(date: Date, id: UUID)
+    {
+        let index = ExerDays.firstIndex(where: {$0.Date == date})
+        if (index == nil) { return }
+        let itemIndex = ExerDays[index!].ItemSets.lastIndex(where: {$0.ItemId == id})
+        if (itemIndex == nil) { return }
+        ExerDays[index!].ItemSets.remove(at: itemIndex!);
     }
     mutating func AddNote(date: Date, str: String) {
         let index = ExerDays.firstIndex(where: {$0.Date == date})
@@ -82,12 +98,10 @@ struct ExerSet : Codable
     mutating func ClearDay(_ date: Date) {
         ExerDays.removeAll(where: {$0.Date == date})
         var day = ExerDay(Date: date)
-        ExerItems.forEach { item in
-            day.Sets[item.id] = 0
-        }
+        day.ItemSets = []
         ExerDays.append(day)
     }
-    
+
     /*
      mutating func NewMoodItem(name: String, date: Date)
      {
@@ -117,16 +131,26 @@ struct ExerSet : Codable
 struct ExerDay : Codable
 {
     var Date: Date
-    var Sets: [UUID: Int] = [:]
+    var ItemSets: [ItemSet] = []
     var Journal: [String] = []
 
     enum CodingKeys: String, CodingKey {
         case Date
-        case Sets
+        case ItemSets
         case Journal
     }
 }
-
+struct ItemSet : Codable
+{
+    var ItemId: UUID
+    var Weight: Int
+    var Reps: Int
+    enum CodingKeys: String, CodingKey {
+        case ItemId
+        case Weight
+        case Reps
+    }
+}
 struct ExerItem : Codable, Hashable, Identifiable, Comparable
 {
     static func < (lhs: ExerItem, rhs: ExerItem) -> Bool {
@@ -134,9 +158,6 @@ struct ExerItem : Codable, Hashable, Identifiable, Comparable
     }
     func description() -> String {
         var rv = "\(Name)"
-        if (Reps != 10){
-            rv = rv + " (\(Reps))"
-        }
         if (PerSide) {
             rv = rv + " (2x)"
         }
@@ -149,16 +170,18 @@ struct ExerItem : Codable, Hashable, Identifiable, Comparable
     enum CodingKeys: String, CodingKey {
         case id
         case Name
-        case Reps
         case Notes
         case PerSide
+        case LastWeight
+        case LastReps
     }
 
     var id = UUID() // Automatically generate a unique identifier
     var Name: String
-    var Reps: Int
     var Notes: String
     var PerSide: Bool
+    var LastWeight: Int?
+    var LastReps: Int?
 }
 struct ExerPersist {
     static let _iop = IOPAws(app: "DanReps")
@@ -186,7 +209,7 @@ struct ExerPersist {
         }
         return ExerSet.GetDefault()
     }
-    static func Update(id: UUID, name: String, reps: Int, perSide: Bool, notes: String) async
+    static func Update(id: UUID, name: String, perSide: Bool, notes: String) async
     {
         Task{
             var exerSet = await Read()
@@ -194,13 +217,12 @@ struct ExerPersist {
             let index = exerSet.ExerItems.firstIndex(where: { $0.id == id})
             if (index == nil)
             {
-                let item = ExerItem(Name: name, Reps: reps, Notes: notes, PerSide: perSide)
+                let item = ExerItem(Name: name, Notes: notes, PerSide: perSide)
                 exerSet.ExerItems.append(item)
             }
             else
             {
                 exerSet.ExerItems[index!].Name = name
-                exerSet.ExerItems[index!].Reps = reps
                 exerSet.ExerItems[index!].PerSide = perSide
                 exerSet.ExerItems[index!].Notes = notes
             }

@@ -20,7 +20,10 @@ struct ContentView: View {
     @State private var _timer: Timer?
     @State private var _showClearConfirmation = false
     @State private var _rapid = GetRapid()
- 
+    @State private var _weight: Int = 50
+    @State private var _reps: Int = 10
+    @State private var _onDeck: UUID? = nil
+    
     var body: some View {
         NavigationStack{
             HStack{
@@ -42,12 +45,29 @@ struct ContentView: View {
                     HStack{
                         Text(item.description())
                         Spacer()
-                        Text(String(_exerSet.GetRepCount(date: _date, id: item.id)))
-                        Button("💥", action: {Crush(id: item.id )})
+                        Text(String(_exerSet.GetSetCount(date: _date, id: item.id)))
+                        Button(CrushButtonText(item.id), action: {Crush(item.id)})
                             .background(Color.blue)
                             .foregroundColor(.white)
                             .cornerRadius(8)
                         
+                    }
+                }
+            }
+            HStack {
+                if (_onDeck != nil) {
+                    Text(GetExerItem(_onDeck!).Name)
+                }
+                Picker("Weight", selection: $_weight) {
+                    ForEach(Array(stride(from: 25, to: 101, by: 5)), id: \.self) { index in
+                        Text("\(index)lbs")
+                            .tag(index)
+                    }
+                }
+                Picker("Reps", selection: $_reps) {
+                    ForEach(Array(stride(from: 10, to: 21, by: 5)), id: \.self) { index in
+                        Text("\(index)reps")
+                            .tag(index)
                     }
                 }
             }
@@ -56,7 +76,7 @@ struct ContentView: View {
                 ForEach(notes.reversed(), id: \.self){ note in
                     Text(note)
                 }
-            }
+            }.frame(maxHeight: 100)
             if (_end != nil) {
                 Text(_countdownString)
                     .font(.system(size: 48, weight: .bold)) // Large Text
@@ -150,15 +170,33 @@ struct ContentView: View {
         _end = nil
         _countdownString = CountdownString()
     }
-    func Crush(id: UUID)
+    func Crush(_ id: UUID)
     {
-        _exerSet.Modify(date: _date, id: id, offset: 1)
-        AddNote("Crushed \(_exerSet.GetItem(id: id).Name)")
-        _history.append(id);
-        if (_rapid) {
-            startTimer(seconds: Double(_exerSet.Interval ?? 60))
+        if (id != _onDeck)
+        {
+            _onDeck = id
+            let itemSet = GetExerItem(id)
+            _weight = itemSet.LastWeight ?? 50
+            _reps = itemSet.LastReps ?? 10
+        } else {
+            _exerSet.Add(date: _date, id: id, weight: _weight, reps: _reps)
+            AddNote("Crushed \(GetExerItem(id).Name)")
+            _history.append(id);
+            if (_rapid) {
+                startTimer(seconds: Double(_exerSet.Interval ?? 60))
+            }
+            ExerPersist.SaveSync(_exerSet)
         }
-        ExerPersist.SaveSync(_exerSet)
+    }
+    func GetExerItem(_ id: UUID) -> ExerItem{
+        return _exerSet.GetItem(id: id)
+    }
+    func CrushButtonText(_ id: UUID) -> String {
+        if (_onDeck == id) {
+            return "💥"
+        } else {
+            return "🍛"
+        }
     }
     func AddNote(_ str: String) {
         _exerSet.AddNote(date: _date, str: str)
@@ -175,7 +213,7 @@ struct ContentView: View {
         let id = _history.last
         if (id == nil) { return }
         AddNote("Undo \(_exerSet.GetItem(id: id!).Name)")
-        _exerSet.Modify(date: _date, id: id!, offset: -1)
+        _exerSet.Remove(date: _date, id: id!)
         ExerPersist.SaveSync(_exerSet)
         _history.removeLast()
         _end = nil
