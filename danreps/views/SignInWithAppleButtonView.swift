@@ -10,6 +10,7 @@ import SwiftUI
 import AuthenticationServices
 
 struct SignInWithAppleButtonView: View {
+    @Binding var welcomed: Bool
     var body: some View {
         SignInWithAppleButton(
             .signIn,
@@ -33,6 +34,7 @@ struct SignInWithAppleButtonView: View {
                 print("Email: \(credential.email ?? "no email")")
                 print("Full Name: \(credential.fullName?.givenName ?? "no name")")
                 IOPAws.saveUserID(credential.user)
+                welcomed = true
                 // Save user ID securely (e.g., to Keychain)
             }
         case .failure(let error):

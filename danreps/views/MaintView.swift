@@ -18,6 +18,7 @@ import SwiftUI
 
 struct MaintView: View {
     let _iop = IOPAws(app: "ToDone")
+    @State private var _welcomed: Bool = (IOPAws.getUserID() != nil)
     @State private var _exerSet: ExerSet = .GetDefault()
     @State private var _wait: String = "60"
     @State private var _showingAlert = false
@@ -40,8 +41,8 @@ struct MaintView: View {
                     .keyboardType(.numberPad)
                     .background(Color.yellow.opacity(0.2))
             }
-            if (IOPAws.getUserID() == nil) {
-                SignInWithAppleButtonView()
+            if (!_welcomed) {
+                SignInWithAppleButtonView(welcomed: $_welcomed)
             } else {
                 Button(action: {
                     signOut()
@@ -73,6 +74,7 @@ struct MaintView: View {
     func signOut()
     {
         IOPAws.clearUserID()
+        _welcomed = false
         Refresh()
     }
     func save()

@@ -40,6 +40,7 @@ struct ContentView: View {
                     Text("⏭️")
                 }
             }
+            
             List{
                 ForEach(_exerSet.ExerItems, id: \.self){ item in
                     HStack{

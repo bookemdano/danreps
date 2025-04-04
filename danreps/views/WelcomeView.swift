@@ -11,14 +11,18 @@ struct WelcomeView: View {
     var body: some View {
         VStack {
             Text("Welcome!")
-            SignInWithAppleButtonView()
+            SignInWithAppleButtonView(welcomed: $showMainView)
             Button(action: {
                 showMainView = true
             }){
                 Text("Just Play. No Save.")
+                
             }
                 .frame(height: 45)
                 .padding()
+        }
+        .onAppear {
+           print("onApear")
         }
         .fullScreenCover(isPresented: $showMainView) {
             ContentView()
