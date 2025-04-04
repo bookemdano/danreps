@@ -22,7 +22,7 @@ struct ContentView: View {
     @State private var _rapid = GetRapid()
     @State private var _weight: Int = 50
     @State private var _reps: Int = 10
-    @State private var _onDeck: UUID? = nil
+    @State private var _onDeckId: UUID? = nil
     
     var body: some View {
         NavigationStack{
@@ -46,7 +46,7 @@ struct ContentView: View {
                         Text(item.description())
                         Spacer()
                         Text(String(_exerSet.GetSetCount(date: _date, id: item.id)))
-                        Button(CrushButtonText(item.id), action: {Crush(item.id)})
+                        Button("🍛", action: {Serve(item.id)})
                             .background(Color.blue)
                             .foregroundColor(.white)
                             .cornerRadius(8)
@@ -55,8 +55,8 @@ struct ContentView: View {
                 }
             }
             HStack {
-                if (_onDeck != nil) {
-                    Text(GetExerItem(_onDeck!).Name)
+                if (_onDeckId != nil) {
+                    Text(GetExerItem(_onDeckId!).Name)
                 }
                 Picker("Weight", selection: $_weight) {
                     ForEach(Array(stride(from: 25, to: 101, by: 5)), id: \.self) { index in
@@ -69,6 +69,12 @@ struct ContentView: View {
                         Text("\(index)reps")
                             .tag(index)
                     }
+                }
+                if (_onDeckId != nil) {
+                    Button("💥", action: {Crush(_onDeckId!)})
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
                 }
             }
             List{
@@ -170,29 +176,31 @@ struct ContentView: View {
         _end = nil
         _countdownString = CountdownString()
     }
+    func Serve(_ id: UUID)
+    {
+        _onDeckId = id
+        let itemSet = GetExerItem(id)
+        _weight = itemSet.LastWeight ?? 50
+        _reps = itemSet.LastReps ?? 10
+    }
     func Crush(_ id: UUID)
     {
-        if (id != _onDeck)
-        {
-            _onDeck = id
-            let itemSet = GetExerItem(id)
-            _weight = itemSet.LastWeight ?? 50
-            _reps = itemSet.LastReps ?? 10
-        } else {
-            _exerSet.Add(date: _date, id: id, weight: _weight, reps: _reps)
-            AddNote("Crushed \(GetExerItem(id).Name)")
-            _history.append(id);
-            if (_rapid) {
-                startTimer(seconds: Double(_exerSet.Interval ?? 60))
-            }
-            ExerPersist.SaveSync(_exerSet)
+        if (id != _onDeckId) {
+            return
         }
+        _exerSet.Add(date: _date, id: id, weight: _weight, reps: _reps)
+        AddNote("Crushed \(GetExerItem(id).Name)")
+        _history.append(id);
+        if (_rapid) {
+            startTimer(seconds: Double(_exerSet.Interval ?? 60))
+        }
+        ExerPersist.SaveSync(_exerSet)
     }
     func GetExerItem(_ id: UUID) -> ExerItem{
         return _exerSet.GetItem(id: id)
     }
     func CrushButtonText(_ id: UUID) -> String {
-        if (_onDeck == id) {
+        if (_onDeckId == id) {
             return "💥"
         } else {
             return "🍛"

@@ -1,0 +1,28 @@
+//
+//  ContentView 2.swift
+//  danreps
+//
+//  Created by Daniel Francis on 4/4/25.
+//
+import SwiftUI
+
+struct WelcomeView: View {
+    @State private var showMainView = (IOPAws.getUserID() != nil)
+    var body: some View {
+        VStack {
+            Text("Welcome!")
+            SignInWithAppleButtonView()
+            Button(action: {
+                showMainView = true
+            }){
+                Text("Just Play. No Save.")
+            }
+                .frame(height: 45)
+                .padding()
+        }
+        .fullScreenCover(isPresented: $showMainView) {
+            ContentView()
+        }
+        
+    }
+}

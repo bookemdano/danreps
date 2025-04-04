@@ -14,7 +14,7 @@ struct danrepsApp: App {
     }
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            WelcomeView()
         }
     }
 }

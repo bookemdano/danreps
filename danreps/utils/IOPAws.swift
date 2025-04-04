@@ -115,12 +115,56 @@ struct IOPAws {
             }
         }
     }
-    
-    static func ChangeOwner(owner: String){
-        UserDefaults.standard.set(owner, forKey: "Owner")
+
+    static var _userID: String?
+    static func clearUserID() {
+        let query: [CFString: Any] = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrAccount: "userID",
+        ]
+        // Remove any existing item
+        SecItemDelete(query as CFDictionary)
+        _userID = nil
     }
-    static func GetOwner() -> String{
-        return UserDefaults.standard.string(forKey: "Owner") ?? "Dan"
+    static func saveUserID(_ userID: String) {
+        guard let data = userID.data(using: .utf8) else { return }
+        let query: [CFString: Any] = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrAccount: "userID",
+            kSecValueData: data
+        ]
+        // Remove any existing item
+        SecItemDelete(query as CFDictionary)
+
+        // Add new keychain item
+        let status = SecItemAdd(query as CFDictionary, nil)
+        if status == errSecSuccess {
+            print("User ID saved successfully.")
+            _userID = userID;
+        } else {
+            print("Error saving user ID: \(status)")
+        }
+    }
+
+    // Function to retrieve the stored user ID
+    static func getUserID() -> String? {
+        if (_userID != nil) {
+            return _userID
+        }
+        let query: [CFString: Any] = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrAccount: "userID",
+            kSecReturnData: kCFBooleanTrue as Any,
+            kSecMatchLimit: kSecMatchLimitOne
+        ]
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        if status == errSecSuccess, let data = result as? Data,
+           let userID = String(data: data, encoding: .utf8) {
+            _userID = userID
+            return userID
+        }
+        return nil
     }
     
     public func Test()

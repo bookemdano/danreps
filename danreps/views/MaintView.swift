@@ -19,7 +19,6 @@ import SwiftUI
 struct MaintView: View {
     let _iop = IOPAws(app: "ToDone")
     @State private var _exerSet: ExerSet = .GetDefault()
-    @State private var _owner: String = IOPAws.GetOwner()
     @State private var _wait: String = "60"
     @State private var _showingAlert = false
     @State private var _deleteItem: String = ""
@@ -41,12 +40,16 @@ struct MaintView: View {
                     .keyboardType(.numberPad)
                     .background(Color.yellow.opacity(0.2))
             }
-            HStack{
-                Text("Owner: ")
-                Spacer()
-                TextField("Owner", text: $_owner)
-                    .background(Color.yellow.opacity(0.2))
+            if (IOPAws.getUserID() == nil) {
+                SignInWithAppleButtonView()
+            } else {
+                Button(action: {
+                    signOut()
+                }){
+                    Text("Sign Out")
+                }
             }
+
             Button(action: {
                 save()
             }){
@@ -66,12 +69,14 @@ struct MaintView: View {
         
     }
 
+
+    func signOut()
+    {
+        IOPAws.clearUserID()
+        Refresh()
+    }
     func save()
     {
-        if (_owner != IOPAws.GetOwner()) {
-            IOPAws.ChangeOwner(owner: _owner)
-            Refresh()
-        }
         _exerSet.Interval = Int(_wait) ?? 60
         Task{
             await ExerPersist.SaveAsync(_exerSet)

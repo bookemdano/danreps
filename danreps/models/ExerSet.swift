@@ -187,8 +187,11 @@ struct ExerPersist {
     static let _iop = IOPAws(app: "DanReps")
 
     static func JsonName() -> String{
-        let rv = "exers\(IOPAws.GetOwner()).json"
-        return rv
+        var userID = IOPAws.getUserID()
+        if (userID == nil){
+            userID = "Template"
+        }
+        return "exers\(userID!).json"
     }
     
     static func Read() async -> ExerSet{
@@ -245,6 +248,10 @@ struct ExerPersist {
     }
     static func SaveAsync(_ exerSet: ExerSet) async
     {
+        if (IOPAws.getUserID() == nil) {
+            print("Don't save without userID")
+            return
+        }
         do {
             let jsonData = try JSONEncoder().encode(exerSet)
             if let jsonString = String(data: jsonData, encoding: .utf8) {
