@@ -5,6 +5,7 @@
 //  Created by Daniel Francis on 1/4/25.
 //
 import AWSS3
+import DanSwiftLib
 
 struct IOPAws {
     var _app = "Base"
