@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		A9D350782D74B21E005549AC /* DanSwiftLib in Frameworks */ = {isa = PBXBuildFile; productRef = A9D350772D74B21E005549AC /* DanSwiftLib */; };
+		A9F5A7992DA05F9300BBB395 /* DanSwiftLib in Frameworks */ = {isa = PBXBuildFile; productRef = A9F5A7982DA05F9300BBB395 /* DanSwiftLib */; };
+		A9F5A79C2DA0645E00BBB395 /* DanSwiftLib in Frameworks */ = {isa = PBXBuildFile; productRef = A9F5A79B2DA0645E00BBB395 /* DanSwiftLib */; };
 		E5E7A26661E59BE68C4BACDD /* Pods_danreps.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 430643CE8027BF3C5913276A /* Pods_danreps.framework */; };
 /* End PBXBuildFile section */
 
@@ -21,6 +23,8 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A967BC512D4E6AF5007378D7 /* danreps */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = danreps;
 			sourceTree = "<group>";
 		};
@@ -32,6 +36,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				A9D350782D74B21E005549AC /* DanSwiftLib in Frameworks */,
+				A9F5A7992DA05F9300BBB395 /* DanSwiftLib in Frameworks */,
+				A9F5A79C2DA0645E00BBB395 /* DanSwiftLib in Frameworks */,
 				E5E7A26661E59BE68C4BACDD /* Pods_danreps.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -85,7 +91,6 @@
 				A967BC4B2D4E6AF5007378D7 /* Sources */,
 				A967BC4C2D4E6AF5007378D7 /* Frameworks */,
 				A967BC4D2D4E6AF5007378D7 /* Resources */,
-				9181A788242B3E456CCE5D36 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -124,7 +129,7 @@
 			mainGroup = A967BC462D4E6AF5007378D7;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				A9D350762D74B21E005549AC /* XCLocalSwiftPackageReference "../DanSwiftLib" */,
+				A9F5A79A2DA0645E00BBB395 /* XCLocalSwiftPackageReference "DanSwiftLib" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A967BC502D4E6AF5007378D7 /* Products */;
@@ -167,23 +172,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		9181A788242B3E456CCE5D36 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-danreps/Pods-danreps-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-danreps/Pods-danreps-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-danreps/Pods-danreps-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -421,7 +409,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		A9D350762D74B21E005549AC /* XCLocalSwiftPackageReference "../DanSwiftLib" */ = {
+		A9F5A79A2DA0645E00BBB395 /* XCLocalSwiftPackageReference "DanSwiftLib" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../DanSwiftLib;
 		};
@@ -429,6 +417,14 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		A9D350772D74B21E005549AC /* DanSwiftLib */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DanSwiftLib;
+		};
+		A9F5A7982DA05F9300BBB395 /* DanSwiftLib */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DanSwiftLib;
+		};
+		A9F5A79B2DA0645E00BBB395 /* DanSwiftLib */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DanSwiftLib;
 		};

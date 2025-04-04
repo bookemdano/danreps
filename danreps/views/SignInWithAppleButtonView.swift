@@ -8,6 +8,7 @@
 
 import SwiftUI
 import AuthenticationServices
+import DanSwiftLib
 
 struct SignInWithAppleButtonView: View {
     @Binding var welcomed: Bool

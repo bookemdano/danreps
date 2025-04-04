@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import DanSwiftLib
 
 struct ExerSet : Codable
 {

@@ -6,6 +6,5 @@ target 'danreps' do
   use_frameworks!
 
   # Pods for MacLab
-    pod 'AWSS3'
-    pod 'AWSCore'
+
 end

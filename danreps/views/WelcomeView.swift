@@ -5,6 +5,7 @@
 //  Created by Daniel Francis on 4/4/25.
 //
 import SwiftUI
+import DanSwiftLib
 
 struct WelcomeView: View {
     @State private var showMainView = (IOPAws.getUserID() != nil)
