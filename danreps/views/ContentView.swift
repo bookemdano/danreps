@@ -40,42 +40,35 @@ struct ContentView: View {
                     Text("⏭️")
                 }
             }
-            
             List{
                 ForEach(_exerSet.ExerItems, id: \.self){ item in
                     HStack{
                         Text(item.description())
                         Spacer()
+                        if (item.id == _onDeckId) {
+                            Picker("Weight", selection: $_weight) {
+                                ForEach(Array(stride(from: 25, to: 101, by: 5)), id: \.self) { index in
+                                    Text("\(index)lbs")
+                                        .tag(index)
+                                }
+                            }
+                            Picker("Reps", selection: $_reps) {
+                                ForEach(Array(stride(from: 5, to: 21, by: 5)), id: \.self) { index in
+                                    Text("\(index)reps")
+                                        .tag(index)
+                                }
+                            }
+                            Button("💥", action: {Crush(_onDeckId!)})
+                                .padding(12)
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                                .buttonStyle(PlainButtonStyle())
+                        } else {
+                            Button("", action: {Serve(item.id)})
+                        }
                         Text(String(_exerSet.GetSetCount(date: _date, id: item.id)))
-                        Button("🍛", action: {Serve(item.id)})
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                        
-                    }
-                }
-            }
-            HStack {
-                if (_onDeckId != nil) {
-                    Text(GetExerItem(_onDeckId!).Name)
-                }
-                Picker("Weight", selection: $_weight) {
-                    ForEach(Array(stride(from: 25, to: 101, by: 5)), id: \.self) { index in
-                        Text("\(index)lbs")
-                            .tag(index)
-                    }
-                }
-                Picker("Reps", selection: $_reps) {
-                    ForEach(Array(stride(from: 10, to: 21, by: 5)), id: \.self) { index in
-                        Text("\(index)reps")
-                            .tag(index)
-                    }
-                }
-                if (_onDeckId != nil) {
-                    Button("💥", action: {Crush(_onDeckId!)})
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
+                    }.background(BackgroundColor(item.id))
                 }
             }
             List{
@@ -130,6 +123,14 @@ struct ContentView: View {
                 Refresh()
             }
         }
+    }
+    func BackgroundColor(_ itemId: UUID?) -> Color {
+        if (itemId == _onDeckId){
+            return Color.gray.opacity(0.2)
+        } else {
+            return .clear
+        }
+            
     }
     static func SetRapid(_ val: Bool){
         UserDefaults.standard.set(val, forKey: "Rapid")
@@ -190,7 +191,7 @@ struct ContentView: View {
             return
         }
         _exerSet.Add(date: _date, id: id, weight: _weight, reps: _reps)
-        AddNote("Crushed \(GetExerItem(id).Name)")
+        AddNote("Crushed \(GetExerItem(id).Name) at \(_weight) lbs for \(_reps) reps")
         _history.append(id);
         if (_rapid) {
             startTimer(seconds: Double(_exerSet.Interval ?? 60))
