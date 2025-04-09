@@ -43,7 +43,7 @@ struct MaintView: View {
                     .background(Color.yellow.opacity(0.2))
             }
             if (!_welcomed) {
-                SignInWithAppleButtonView(welcomed: $_welcomed)
+                SignInWithAppleButtonView($_welcomed)
             } else {
                 Button(action: {
                     signOut()

@@ -12,7 +12,7 @@ struct WelcomeView: View {
     var body: some View {
         VStack {
             Text("Welcome!")
-            SignInWithAppleButtonView(welcomed: $showMainView)
+            SignInWithAppleButtonView($showMainView)
             Button(action: {
                 showMainView = true
             }){

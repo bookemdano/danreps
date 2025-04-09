@@ -23,8 +23,6 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A967BC512D4E6AF5007378D7 /* danreps */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = danreps;
 			sourceTree = "<group>";
 		};
@@ -129,7 +127,7 @@
 			mainGroup = A967BC462D4E6AF5007378D7;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				A9F5A79A2DA0645E00BBB395 /* XCLocalSwiftPackageReference "DanSwiftLib" */,
+				A9F5A79A2DA0645E00BBB395 /* XCLocalSwiftPackageReference "../DanSwiftLib" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A967BC502D4E6AF5007378D7 /* Products */;
@@ -409,7 +407,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		A9F5A79A2DA0645E00BBB395 /* XCLocalSwiftPackageReference "DanSwiftLib" */ = {
+		A9F5A79A2DA0645E00BBB395 /* XCLocalSwiftPackageReference "../DanSwiftLib" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../DanSwiftLib;
 		};
