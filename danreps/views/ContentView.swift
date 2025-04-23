@@ -44,6 +44,7 @@ struct ContentView: View {
                 ForEach(_exerSet.ExerItems, id: \.self){ item in
                     HStack{
                         Text(item.description())
+                        Text(String(_exerSet.GetStreak(item.id)))
                         Spacer()
                         if (item.id == _onDeckId) {
                             Picker("Weight", selection: $_weight) {
@@ -181,9 +182,9 @@ struct ContentView: View {
     func Serve(_ id: UUID)
     {
         _onDeckId = id
-        let itemSet = GetExerItem(id)
-        _weight = itemSet.LastWeight ?? 50
-        _reps = itemSet.LastReps ?? 10
+        let itemDay = _exerSet.GetLastItemSet(id)
+        _weight = itemDay.Weight
+        _reps = itemDay.Reps
     }
     func Crush(_ id: UUID)
     {

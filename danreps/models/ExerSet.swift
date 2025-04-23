@@ -48,7 +48,27 @@ struct ExerSet : Codable
         }
         return reps!.map({GetItem(id: $0.ItemId)}).sorted(by: {$0.Name < $1.Name})
     }
-    
+    func GetStreak(_ id: UUID) -> Int{
+        // get all the item sets with this itemID in it
+        let matchingItemSets = ExerDays
+            .flatMap { $0.ItemSets }
+            .filter { $0.ItemId == id }
+        let lastWeight = matchingItemSets.last?.Weight ?? 50
+        let lastReps = matchingItemSets.last?.Reps ?? 10
+        var streak = 0
+        for item in matchingItemSets.reversed() {
+            if (item.Reps == lastReps && item.Weight == lastWeight) {
+                streak += 1
+            } else {
+                break
+            }
+        }
+        return streak
+    }
+    func GetLastItemSet(_ id: UUID) -> ItemSet{
+        let set = ExerDays.last(where: {$0.ItemSets.count > 0})?.ItemSets.last(where: {$0.ItemId == id}) ?? ItemSet(ItemId: UUID(), Weight:50, Reps: 10)
+        return set
+    }
     func GetItem(id: UUID) -> ExerItem{
         return ExerItems.first(where: {$0.id == id}) ?? ExerItem(Name: "Missing", Notes: "", PerSide: false)
     }
@@ -76,13 +96,8 @@ struct ExerSet : Codable
         }
         let newItem = ItemSet(ItemId: id, Weight: weight, Reps: reps)
         ExerDays[index!].ItemSets.append(newItem)
-        
-        var itemIndex = ExerItems.firstIndex(where: {$0.id == id})
-        if (itemIndex != nil) {
-            ExerItems[itemIndex!].LastWeight = weight
-            ExerItems[itemIndex!].LastReps = reps
-        }
     }
+    
     mutating func Remove(date: Date, id: UUID)
     {
         let index = ExerDays.firstIndex(where: {$0.Date == date})
@@ -173,16 +188,12 @@ struct ExerItem : Codable, Hashable, Identifiable, Comparable
         case Name
         case Notes
         case PerSide
-        case LastWeight
-        case LastReps
     }
 
     var id = UUID() // Automatically generate a unique identifier
     var Name: String
     var Notes: String
     var PerSide: Bool
-    var LastWeight: Int?
-    var LastReps: Int?
 }
 struct ExerPersist {
     static let _iop = IOPAws(app: "DanReps")
