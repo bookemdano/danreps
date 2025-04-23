@@ -55,7 +55,7 @@ struct ContentView: View {
                             }
                             Picker("Reps", selection: $_reps) {
                                 ForEach(Array(stride(from: 5, to: 21, by: 5)), id: \.self) { index in
-                                    Text("\(index)reps")
+                                    Text("\(index)")
                                         .tag(index)
                                 }
                             }
@@ -76,8 +76,10 @@ struct ContentView: View {
                 let notes = _exerSet.GetDay(_date)?.Journal ?? []
                 ForEach(notes.reversed(), id: \.self){ note in
                     Text(note)
+                        .font(.caption)
+                        .fontWeight(.thin)
                 }
-            }.frame(maxHeight: 100)
+            }.frame(minHeight: 200)
             if (_end != nil) {
                 Text(_countdownString)
                     .font(.system(size: 48, weight: .bold)) // Large Text
@@ -192,7 +194,7 @@ struct ContentView: View {
             return
         }
         _exerSet.Add(date: _date, id: id, weight: _weight, reps: _reps)
-        AddNote("Crushed \(GetExerItem(id).Name) at \(_weight) lbs for \(_reps) reps")
+        AddNote("Crushed \(GetExerItem(id).Name) @\(_weight)lbs x \(_reps)")
         _history.append(id);
         if (_rapid) {
             startTimer(seconds: Double(_exerSet.Interval ?? 60))

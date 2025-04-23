@@ -57,17 +57,24 @@ struct ExerSet : Codable
         let lastReps = matchingItemSets.last?.Reps ?? 10
         var streak = 0
         for item in matchingItemSets.reversed() {
-            if (item.Reps == lastReps && item.Weight == lastWeight) {
+            if (item.Reps >= lastReps && item.Weight >= lastWeight) {
                 streak += 1
-            } else {
-                break
             }
         }
         return streak
     }
     func GetLastItemSet(_ id: UUID) -> ItemSet{
-        let set = ExerDays.last(where: {$0.ItemSets.count > 0})?.ItemSets.last(where: {$0.ItemId == id}) ?? ItemSet(ItemId: UUID(), Weight:50, Reps: 10)
-        return set
+        for day in ExerDays.reversed() {
+            if let match = day.ItemSets.last(where: { $0.ItemId == id }) {
+                return match
+            }
+        }
+        return ItemSet(ItemId: UUID(), Weight:50, Reps: 10)
+        
+        /*let matchingItemSets = ExerDays
+            .flatMap { $0.ItemSets }
+            .filter { $0.ItemId == id }
+        return matchingItemSets.last ?? ItemSet(ItemId: UUID(), Weight:50, Reps: 10)*/
     }
     func GetItem(id: UUID) -> ExerItem{
         return ExerItems.first(where: {$0.id == id}) ?? ExerItem(Name: "Missing", Notes: "", PerSide: false)
