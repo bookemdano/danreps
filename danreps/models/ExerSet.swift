@@ -101,7 +101,7 @@ struct ExerSet : Codable
             ClearDay(date)
             index = ExerDays.firstIndex(where: {$0.Date == date})
         }
-        let newItem = ItemSet(ItemId: id, Weight: weight, Reps: reps)
+        let newItem = ItemSet(ItemId: id, Weight: weight, Reps: reps, Time: Date())
         ExerDays[index!].ItemSets.append(newItem)
     }
     
@@ -125,6 +125,28 @@ struct ExerSet : Codable
         ExerDays.append(day)
     }
 
+    public func GetHistory(item: ExerItem) -> [(Date, String)] {
+        return ExerDays.flatMap { day -> [(Date, String)] in
+            day.ItemSets.compactMap { set -> (Date, String)? in
+                if set.ItemId == item.id {
+                    return (set.Time ?? day.Date, "@\(set.Weight)lbs x \(set.Reps)")
+                }
+                return nil
+            }
+        }
+    }
+    func GetJournal(date: Date) -> [String] {
+        let day = GetDay(date)
+        if (day == nil) {
+            return []
+        }
+        let journalEntries = day!.ItemSets.map { itemSet -> String in
+            let item = GetItem(id: itemSet.ItemId)
+            //"Crushed \(GetExerItem(id).Name) @\(_weight)lbs x \(_reps)"
+            return "\((itemSet.Time ?? Date().dateOnly).shortTime) Crushed \(item.Name) @\(itemSet.Weight)lbs x \(itemSet.Reps)"
+        }
+        return journalEntries
+    }
     /*
      mutating func NewMoodItem(name: String, date: Date)
      {
@@ -168,10 +190,12 @@ struct ItemSet : Codable
     var ItemId: UUID
     var Weight: Int
     var Reps: Int
+    var Time: Date?
     enum CodingKeys: String, CodingKey {
         case ItemId
         case Weight
         case Reps
+        case Time
     }
 }
 

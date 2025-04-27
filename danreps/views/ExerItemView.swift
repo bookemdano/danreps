@@ -18,6 +18,7 @@ import SwiftUI
 
 struct ExerItemView: View {
     let exerItem: ExerItem
+    let history: [(Date, String)]?
     @Environment(\.presentationMode) var presentationMode
     @State private var _showDeleteConfirmation = false
     @State var _name: String = ""
@@ -37,6 +38,14 @@ struct ExerItemView: View {
                 .border(Color.gray)
             Toggle("Per Side", isOn: $_perSide)
             Spacer()
+            if (history != nil) {
+                List{
+                    ForEach(history!.reversed(), id: \.0) { item in
+                        Text("\(item.0.shortDateTime) \(item.1)")
+                    }
+                }.listStyle(InsetGroupedListStyle())
+                Spacer()
+            }
             HStack{
                 Button(action: {
                     Save()

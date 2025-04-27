@@ -28,7 +28,7 @@ struct MaintView: View {
         NavigationStack{
             List{
                 ForEach(_exerSet.ExerItems, id: \.self){ item in
-                    NavigationLink(destination: ExerItemView(exerItem: item))
+                    NavigationLink(destination: ExerItemView(exerItem: item, history: _exerSet.GetHistory(item: item)))
                     {
                         Text(item.description())
                     }
@@ -57,7 +57,7 @@ struct MaintView: View {
             }){
                 Text("Save")
             }
-            NavigationLink(destination: ExerItemView(exerItem: ExerItem(Name: "", Notes: "", PerSide: false))) {
+            NavigationLink(destination: ExerItemView(exerItem: ExerItem(Name: "", Notes: "", PerSide: false), history: nil)) {
                 Text("New Item").bold()
             }
         }

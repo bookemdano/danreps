@@ -73,7 +73,7 @@ struct ContentView: View {
                 }
             }
             List{
-                let notes = _exerSet.GetDay(_date)?.Journal ?? []
+                let notes = _exerSet.GetJournal(date: _date)
                 ForEach(notes.reversed(), id: \.self){ note in
                     Text(note)
                         .font(.caption)
