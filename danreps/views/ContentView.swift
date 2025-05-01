@@ -32,7 +32,7 @@ struct ContentView: View {
                 }){
                     Text("⏮️")
                 }
-                Text(_date.danFormat + "(\(_exerSet.GetSetCount(date: _date)))")
+                Text(_date.danFormat + "(\(_exerSet.GetSetCount(date: _date)) Σ\(_exerSet.GetSetWeight(date: _date))lbs)")
                     .bold()
                 Button(action: {
                     Next()
@@ -54,7 +54,7 @@ struct ContentView: View {
                                 }
                             }
                             Picker("Reps", selection: $_reps) {
-                                ForEach(Array(stride(from: 5, to: 21, by: 5)), id: \.self) { index in
+                                ForEach([5,8,10,12,15,20,25], id: \.self) { index in
                                     Text("\(index)")
                                         .tag(index)
                                 }
@@ -79,7 +79,9 @@ struct ContentView: View {
                         .font(.caption)
                         .fontWeight(.thin)
                 }
-            }.frame(minHeight: 200)
+            }
+                .frame(maxHeight: 200)
+                .listStyle(.plain)
             if (_end != nil) {
                 Text(_countdownString)
                     .font(.system(size: 48, weight: .bold)) // Large Text

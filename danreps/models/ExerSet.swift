@@ -13,10 +13,13 @@ struct ExerSet : Codable
     var ExerDays: [ExerDay]
     var ExerItems: [ExerItem]
     var Interval: Int? = 60
+    var Version: String?
+    static public let CurrentVersion = "1.0.0"
     enum CodingKeys: String, CodingKey {
         case ExerDays
         case ExerItems
         case Interval
+        case Version
     }
     mutating func Refresh(other: ExerSet, date: Date){
         ExerDays.removeAll(keepingCapacity: false)
@@ -27,6 +30,19 @@ struct ExerSet : Codable
         if (GetDay(date) == nil) {
             ClearDay(date)
         }
+        Version = other.Version
+    }
+    mutating func UpdateVersion()
+    {
+        // nil to 1.0.0
+        for dayIndex in ExerDays.indices {
+            for setIndex in ExerDays[dayIndex].ItemSets.indices {
+                if (ExerDays[dayIndex].ItemSets[setIndex].Time == nil) {
+                    ExerDays[dayIndex].ItemSets[setIndex].Time = ExerDays[dayIndex].Date
+                }
+            }
+        }
+        Version = ExerSet.CurrentVersion
     }
     static func GetDefault() -> ExerSet
     {
@@ -55,13 +71,17 @@ struct ExerSet : Codable
             .filter { $0.ItemId == id }
         let lastWeight = matchingItemSets.last?.Weight ?? 50
         let lastReps = matchingItemSets.last?.Reps ?? 10
-        var streak = 0
-        for item in matchingItemSets.reversed() {
+        //var streak = 0
+        var dates:[Date] = []
+        for item in matchingItemSets {
             if (item.Reps >= lastReps && item.Weight >= lastWeight) {
-                streak += 1
-            }
+                let date = item.Time?.dateOnly ?? Date().dateOnly
+                if (!dates.contains(date)) {
+                    dates.append(date)
+                }
+           }
         }
-        return streak
+        return dates.count
     }
     func GetLastItemSet(_ id: UUID) -> ItemSet{
         for day in ExerDays.reversed() {
@@ -84,6 +104,14 @@ struct ExerSet : Codable
         if (day == nil) { return 0 }
         
         return day!.ItemSets.count
+    }
+    func GetSetWeight(date: Date) -> Int{
+        let day = GetDay(date)
+        if (day == nil) { return 0 }
+        
+        return day!.ItemSets.reduce(0) { total, item in
+            total + (item.Weight * item.Reps)
+        }
     }
     func GetSetCount(date: Date, id: UUID) -> Int{
         let day = GetDay(date)
@@ -116,7 +144,6 @@ struct ExerSet : Codable
     mutating func AddNote(date: Date, str: String) {
         let index = ExerDays.firstIndex(where: {$0.Date == date})
         if (index == nil) { return }
-        ExerDays[index!].Journal.append("\(Date().shortTime) \(str)")
     }
     mutating func ClearDay(_ date: Date) {
         ExerDays.removeAll(where: {$0.Date == date})
@@ -177,12 +204,10 @@ struct ExerDay : Codable
 {
     var Date: Date
     var ItemSets: [ItemSet] = []
-    var Journal: [String] = []
 
     enum CodingKeys: String, CodingKey {
         case Date
         case ItemSets
-        case Journal
     }
 }
 struct ItemSet : Codable

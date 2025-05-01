@@ -28,7 +28,10 @@ struct ExerPersist {
         let jsonString = content
         if let jsonData = jsonString.data(using: .utf8) {
             do {
-                let rv = try JSONDecoder().decode(ExerSet.self, from: jsonData)
+                var rv = try JSONDecoder().decode(ExerSet.self, from: jsonData)
+                if (rv.Version != ExerSet.CurrentVersion) {
+                    rv.UpdateVersion()
+                }
                 return rv
             } catch {
                 print("Failed to decode JSON: \(error)")
