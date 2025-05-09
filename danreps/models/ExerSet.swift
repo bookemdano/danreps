@@ -80,7 +80,6 @@ struct ExerSet : Codable
         }
     }
     mutating func RemoveLast(date: Date){
-        let sorted = ExerItems.sorted { $0.GetLastSetOn(date: date).Timestamp > $1.GetLastSetOn(date: date).Timestamp }
         let item = ExerItems.sorted { $0.GetLastSetOn(date: date).Timestamp > $1.GetLastSetOn(date: date).Timestamp }.first
         if (item == nil) {
             return
