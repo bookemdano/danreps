@@ -14,7 +14,6 @@ struct ContentView: View {
     @State private var _exerSet: ExerSet = .GetDefault()
     @State private var _date: Date = Date().dateOnly
     @State private var _newName: String = ""
-    @State private var _history: [UUID] = []
     @State private var _end: Date? = nil
     @State private var _countdownString: String = "-"
     @State private var _timer: Timer?
@@ -41,10 +40,10 @@ struct ContentView: View {
                 }
             }
             List{
-                ForEach(_exerSet.ExerItems, id: \.self){ item in
+                ForEach(_exerSet.ExerItemsByLastDone(), id: \.self){ item in
                     HStack{
                         Text(item.description())
-                        Text(String(_exerSet.GetStreak(item.id)))
+                        Text(String(item.GetStreak()))
                         Spacer()
                         if (item.id == _onDeckId) {
                             Picker("Weight", selection: $_weight) {
@@ -66,9 +65,9 @@ struct ContentView: View {
                                 .cornerRadius(8)
                                 .buttonStyle(PlainButtonStyle())
                         } else {
-                            Button("", action: {Serve(item.id)})
+                            Button("", action: {Serve(item)})
                         }
-                        Text(String(_exerSet.GetSetCount(date: _date, id: item.id)))
+                        Text(String(item.GetSetCount(date: _date)))
                     }.background(BackgroundColor(item.id))
                 }
             }
@@ -103,7 +102,8 @@ struct ContentView: View {
                 }.font(.system(size: 36))
                 Button("↩️"){
                     Undo()
-                }.font(.system(size: 36))
+                }
+                    .font(.system(size: 36))
                 NavigationLink(destination: MaintView()) {
                     Text("⚙️")
                         .font(.system(size: 36))
@@ -183,21 +183,22 @@ struct ContentView: View {
         _end = nil
         _countdownString = CountdownString()
     }
-    func Serve(_ id: UUID)
+    func AddNote(_ note: String) {
+        //nothing to do since we changed the way history works
+    }
+    func Serve(_ item: ExerItem)
     {
-        _onDeckId = id
-        let itemDay = _exerSet.GetLastItemSet(id)
-        _weight = itemDay.Weight
-        _reps = itemDay.Reps
+        _onDeckId = item.id
+        let set = item.GetLastSet()
+        _weight = set.Weight
+        _reps = set.Reps
     }
     func Crush(_ id: UUID)
     {
         if (id != _onDeckId) {
             return
         }
-        _exerSet.Add(date: _date, id: id, weight: _weight, reps: _reps)
-        AddNote("Crushed \(GetExerItem(id).Name) @\(_weight)lbs x \(_reps)")
-        _history.append(id);
+        _exerSet.Crush(id: id, date: _date, weight: _weight, reps: _reps)
         if (_rapid) {
             startTimer(seconds: Double(_exerSet.Interval ?? 60))
         }
@@ -213,24 +214,18 @@ struct ContentView: View {
             return "🍛"
         }
     }
-    func AddNote(_ str: String) {
-        _exerSet.AddNote(date: _date, str: str)
-    }
+
     func ClearDay(_ date: Date) {
         stopTimer()
-        _history.removeAll()
         _exerSet.ClearDay(date)
     }
     
     func Undo()
     {
         stopTimer()
-        let id = _history.last
-        if (id == nil) { return }
-        AddNote("Undo \(_exerSet.GetItem(id: id!).Name)")
-        _exerSet.Remove(date: _date, id: id!)
+        //AddNote("Undo \(_exerSet.GetItem(id: id!).Name)")
+        _exerSet.RemoveLast(date: _date)
         ExerPersist.SaveSync(_exerSet)
-        _history.removeLast()
         _end = nil
     }
     func Next()
@@ -240,12 +235,10 @@ struct ContentView: View {
             return
         }
         _date = newDate
-        _history.removeAll()
     }
     func Prev()
     {
         _date = Calendar.current.date(byAdding: .day, value: -1, to: _date) ?? Date()
-        _history.removeAll()
     }
     func Refresh(){
         Task{

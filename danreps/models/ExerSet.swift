@@ -10,38 +10,42 @@ import DanSwiftLib
 
 struct ExerSet : Codable
 {
-    var ExerDays: [ExerDay]
     var ExerItems: [ExerItem]
     var Interval: Int? = 60
     var Version: String?
-    static public let CurrentVersion = "1.0.0"
+    static public let CurrentVersion = "1.0.1"  // added Sets to Items
     enum CodingKeys: String, CodingKey {
-        case ExerDays
         case ExerItems
         case Interval
         case Version
     }
     mutating func Refresh(other: ExerSet, date: Date){
-        ExerDays.removeAll(keepingCapacity: false)
-        ExerDays.append(contentsOf: other.ExerDays)
         ExerItems.removeAll(keepingCapacity: false)
         ExerItems.append(contentsOf: other.ExerItems)
         Interval = other.Interval
-        if (GetDay(date) == nil) {
-            ClearDay(date)
-        }
+        
         Version = other.Version
     }
     mutating func UpdateVersion()
     {
         // nil to 1.0.0
-        for dayIndex in ExerDays.indices {
-            for setIndex in ExerDays[dayIndex].ItemSets.indices {
-                if (ExerDays[dayIndex].ItemSets[setIndex].Time == nil) {
-                    ExerDays[dayIndex].ItemSets[setIndex].Time = ExerDays[dayIndex].Date
-                }
-            }
-        }
+        /*if (Version == nil) {
+         for dayIndex in ExerDays.indices {
+         for setIndex in ExerDays[dayIndex].ItemSets.indices {
+         if (ExerDays[dayIndex].ItemSets[setIndex].Time == nil) {
+         ExerDays[dayIndex].ItemSets[setIndex].Time = ExerDays[dayIndex].Date
+         }
+         }
+         }
+         }
+         if (Version == "1.0.0") {
+         for i in ExerItems.indices {
+         ExerItems[i].Sets = []
+         for set in GetHistorySets(itemId: ExerItems[i].id) {
+         ExerItems[i].Sets?.append(SetItem(Weight: set.1, Reps: set.2, Timestamp: set.0))
+         }
+         }
+         }*/
         Version = ExerSet.CurrentVersion
     }
     static func GetDefault() -> ExerSet
@@ -53,175 +57,105 @@ struct ExerSet : Codable
         exerItems.append(ExerItem(Name: "BB Curls", Notes: "", PerSide: false))
         exerItems.append(ExerItem(Name: "BB Bench", Notes: "", PerSide: false))
         exerItems.append(ExerItem(Name: "BB Clean", Notes: "", PerSide: false))
-        return ExerSet(ExerDays: [], ExerItems: exerItems)
+        return ExerSet(ExerItems: exerItems)
     }
     
-    func GetDayItems(date: Date) -> [ExerItem]
-    {
-        let reps = GetDay(date)?.ItemSets
-        if (reps == nil) {
-            return []
-        }
-        return reps!.map({GetItem(id: $0.ItemId)}).sorted(by: {$0.Name < $1.Name})
-    }
-    func GetStreak(_ id: UUID) -> Int{
-        // get all the item sets with this itemID in it
-        let matchingItemSets = ExerDays
-            .flatMap { $0.ItemSets }
-            .filter { $0.ItemId == id }
-        let lastWeight = matchingItemSets.last?.Weight ?? 50
-        let lastReps = matchingItemSets.last?.Reps ?? 10
-        //var streak = 0
-        var dates:[Date] = []
-        for item in matchingItemSets {
-            if (item.Reps >= lastReps && item.Weight >= lastWeight) {
-                let date = item.Time?.dateOnly ?? Date().dateOnly
-                if (!dates.contains(date)) {
-                    dates.append(date)
-                }
-           }
-        }
-        return dates.count
-    }
-    func GetLastItemSet(_ id: UUID) -> ItemSet{
-        for day in ExerDays.reversed() {
-            if let match = day.ItemSets.last(where: { $0.ItemId == id }) {
-                return match
-            }
-        }
-        return ItemSet(ItemId: UUID(), Weight:50, Reps: 10)
-        
-        /*let matchingItemSets = ExerDays
-            .flatMap { $0.ItemSets }
-            .filter { $0.ItemId == id }
-        return matchingItemSets.last ?? ItemSet(ItemId: UUID(), Weight:50, Reps: 10)*/
-    }
     func GetItem(id: UUID) -> ExerItem{
         return ExerItems.first(where: {$0.id == id}) ?? ExerItem(Name: "Missing", Notes: "", PerSide: false)
     }
     func GetSetCount(date: Date) -> Int{
-        let day = GetDay(date)
-        if (day == nil) { return 0 }
-        
-        return day!.ItemSets.count
-    }
-    func GetSetWeight(date: Date) -> Int{
-        let day = GetDay(date)
-        if (day == nil) { return 0 }
-        
-        return day!.ItemSets.reduce(0) { total, item in
-            total + (item.Weight * item.Reps)
+        return ExerItems.reduce(0) { total, item in
+            guard let sets = item.Sets else { return total }
+            return total + sets.filter { $0.Timestamp.dateOnly == date.dateOnly }.count
         }
-    }
-    func GetSetCount(date: Date, id: UUID) -> Int{
-        let day = GetDay(date)
-        if (day == nil) { return 0 }
-        return day!.ItemSets.count(where: {$0.ItemId == id})
-    }
-    func GetDay(_ date: Date) -> ExerDay?{
-        return ExerDays.first(where: {$0.Date == date.dateOnly})
-    }
-    mutating func Add(date: Date, id: UUID, weight: Int, reps: Int)
-    {
-        var index = ExerDays.firstIndex(where: {$0.Date == date})
-        if (index == nil)
-        {
-            ClearDay(date)
-            index = ExerDays.firstIndex(where: {$0.Date == date})
-        }
-        let newItem = ItemSet(ItemId: id, Weight: weight, Reps: reps, Time: Date())
-        ExerDays[index!].ItemSets.append(newItem)
     }
     
-    mutating func Remove(date: Date, id: UUID)
-    {
-        let index = ExerDays.firstIndex(where: {$0.Date == date})
-        if (index == nil) { return }
-        let itemIndex = ExerDays[index!].ItemSets.lastIndex(where: {$0.ItemId == id})
-        if (itemIndex == nil) { return }
-        ExerDays[index!].ItemSets.remove(at: itemIndex!);
+    func GetSetWeight(date: Date) -> Int{
+        return ExerItems.reduce(0) { total, item in
+            guard let sets = item.Sets else { return total }
+            var multiplier = 1
+            if (item.PerSide) { multiplier = 2 }
+            return total + sets.filter { $0.Timestamp.dateOnly == date.dateOnly }
+                .reduce(0) { $0 + ($1.Weight * $1.Reps * multiplier) }
+        }
     }
-    mutating func AddNote(date: Date, str: String) {
-        let index = ExerDays.firstIndex(where: {$0.Date == date})
-        if (index == nil) { return }
-    }
-    mutating func ClearDay(_ date: Date) {
-        ExerDays.removeAll(where: {$0.Date == date})
-        var day = ExerDay(Date: date)
-        day.ItemSets = []
-        ExerDays.append(day)
-    }
+    mutating func RemoveLast(date: Date){
+        let sorted = ExerItems.sorted { $0.GetLastSetOn(date: date).Timestamp > $1.GetLastSetOn(date: date).Timestamp }
+        let item = ExerItems.sorted { $0.GetLastSetOn(date: date).Timestamp > $1.GetLastSetOn(date: date).Timestamp }.first
+        if (item == nil) {
+            return
+        }
+        let lastSet = item!.GetLastSetOn(date: date)
+        
+        guard let idx = ExerItems.firstIndex(where: { $0.id == item!.id }) else { return }
+        guard var sets = ExerItems[idx].Sets else { return }
 
-    public func GetHistory(item: ExerItem) -> [(Date, String)] {
-        return ExerDays.flatMap { day -> [(Date, String)] in
-            day.ItemSets.compactMap { set -> (Date, String)? in
-                if set.ItemId == item.id {
-                    return (set.Time ?? day.Date, "@\(set.Weight)lbs x \(set.Reps)")
-                }
-                return nil
+        sets.removeAll {
+            $0.Timestamp == lastSet.Timestamp
+        }
+
+        ExerItems[idx].Sets = sets
+    }
+    func ExerItemsByLastDone() -> [ExerItem] {
+        ExerItems.sorted { $0.GetLastSet().Timestamp > $1.GetLastSet().Timestamp }
+    }
+    
+    mutating func ClearDay(_ date: Date) {
+        for i in ExerItems.indices {
+            if ExerItems[i].Sets == nil { continue }
+            ExerItems[i].Sets!.removeAll {
+                $0.Timestamp.dateOnly == date.dateOnly
             }
         }
     }
+
     func GetJournal(date: Date) -> [String] {
-        let day = GetDay(date)
-        if (day == nil) {
-            return []
+        var entries: [String] = []
+        for item in ExerItems {
+            guard let sets = item.Sets else { continue }
+            for set in sets where set.Timestamp.dateOnly == date.dateOnly {
+                let timeStr = (set.Timestamp.shortTime)
+                let entry = "\(timeStr) Crushed \(item.Name) @\(set.Weight)lbs x \(set.Reps)"
+                entries.append(entry)
+            }
         }
-        let journalEntries = day!.ItemSets.map { itemSet -> String in
-            let item = GetItem(id: itemSet.ItemId)
-            //"Crushed \(GetExerItem(id).Name) @\(_weight)lbs x \(_reps)"
-            return "\((itemSet.Time ?? Date().dateOnly).shortTime) Crushed \(item.Name) @\(itemSet.Weight)lbs x \(itemSet.Reps)"
+        return entries
+    }
+    // crush
+    mutating func Crush(id: UUID, date: Date, weight: Int, reps: Int)
+    {
+        // Find the ExerItem in ExerItems by id
+        guard let idx = ExerItems.firstIndex(where: { $0.id == id }) else { return }
+        if (ExerItems[idx].Sets == nil) { ExerItems[idx].Sets = [] }
+        var timestamp = date
+        if (date.dateOnly == Date().dateOnly) {
+            timestamp = Date()  // include time
         }
-        return journalEntries
+        ExerItems[idx].Sets?.append(SetItem(Weight: weight, Reps: reps, Timestamp: timestamp))
     }
     /*
      mutating func NewMoodItem(name: String, date: Date)
      {
-         ExerItems.append(ExerItem(Name: name))
+     ExerItems.append(ExerItem(Name: name))
      }
      mutating func Move(date: Date, moodItem: ExerItem) dp Rep
-    {
-        if (!ExerDays.contains(where: {$0.Date == date})) {
-            ExerDays.append(ExerDay(Date: date))
-        }
-        let index = ExerDays.firstIndex(where: {$0.Date == date})!
-        var moveTo: MoodStatusEnum = .NA
-        if (moveFrom == .Up) { moveTo = .Down }
-        else if (moveFrom == .NA) { moveTo = .Up }
-        else { moveTo = .NA }
-        
-        if (moveFrom != .NA) {
-            ExerDays[index].Moods.removeValue(forKey: moodItem.id)
-        }
-        if (moveTo != .NA) {
-            ExerDays[index].Moods[moodItem.id] = moveTo
-        }
-    }
+     {
+     if (!ExerDays.contains(where: {$0.Date == date})) {
+     ExerDays.append(ExerDay(Date: date))
+     }
+     let index = ExerDays.firstIndex(where: {$0.Date == date})!
+     var moveTo: MoodStatusEnum = .NA
+     if (moveFrom == .Up) { moveTo = .Down }
+     else if (moveFrom == .NA) { moveTo = .Up }
+     else { moveTo = .NA }
+     
+     if (moveFrom != .NA) {
+     ExerDays[index].Moods.removeValue(forKey: moodItem.id)
+     }
+     if (moveTo != .NA) {
+     ExerDays[index].Moods[moodItem.id] = moveTo
+     }
+     }
      */
 }
-
-struct ExerDay : Codable
-{
-    var Date: Date
-    var ItemSets: [ItemSet] = []
-
-    enum CodingKeys: String, CodingKey {
-        case Date
-        case ItemSets
-    }
-}
-struct ItemSet : Codable
-{
-    var ItemId: UUID
-    var Weight: Int
-    var Reps: Int
-    var Time: Date?
-    enum CodingKeys: String, CodingKey {
-        case ItemId
-        case Weight
-        case Reps
-        case Time
-    }
-}
-
 
