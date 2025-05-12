@@ -76,7 +76,7 @@ struct ExerSet : Codable
             var multiplier = 1
             if (item.PerSide) { multiplier = 2 }
             return total + sets.filter { $0.Timestamp.dateOnly == date.dateOnly }
-                .reduce(0) { $0 + ($1.Weight * $1.Reps * multiplier) }
+                .reduce(0) { $0 + ($1.totalWeight() * multiplier) }
         }
     }
     mutating func RemoveLast(date: Date){
@@ -113,15 +113,14 @@ struct ExerSet : Codable
         for item in ExerItems {
             guard let sets = item.Sets else { continue }
             for set in sets where set.Timestamp.dateOnly == date.dateOnly {
-                let timeStr = (set.Timestamp.shortTime)
-                let entry = "\(timeStr) Crushed \(item.Name) @\(set.Weight)lbs x \(set.Reps)"
-                entries.append(entry)
+                
+                entries.append(set.getJournalString(itemName: item.Name))
             }
         }
         return entries
     }
     // crush
-    mutating func Crush(id: UUID, date: Date, weight: Int, reps: Int)
+    mutating func Crush(id: UUID, date: Date, set: SetItem)
     {
         // Find the ExerItem in ExerItems by id
         guard let idx = ExerItems.firstIndex(where: { $0.id == id }) else { return }
@@ -130,7 +129,11 @@ struct ExerSet : Codable
         if (date.dateOnly == Date().dateOnly) {
             timestamp = Date()  // include time
         }
-        ExerItems[idx].Sets?.append(SetItem(Weight: weight, Reps: reps, Timestamp: timestamp))
+        if (ExerItems[idx].isDuration()) {
+            ExerItems[idx].Sets?.append(SetItem(Span: set.Span, Units: set.Units, Timestamp: timestamp))
+        } else {
+            ExerItems[idx].Sets?.append(SetItem(Weight: set.Weight, Reps: set.Reps, Timestamp: timestamp))
+        }
     }
     /*
      mutating func NewMoodItem(name: String, date: Date)

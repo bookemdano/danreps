@@ -28,6 +28,7 @@ struct ExerItem : Codable, Hashable, Identifiable, Comparable
         case Name
         case Notes
         case PerSide
+        case Duration
         case Sets
     }
 
@@ -59,12 +60,12 @@ struct ExerItem : Codable, Hashable, Identifiable, Comparable
         if (Sets == nil) {
             return 0
         }
-        let lastWeight = Sets!.last?.Weight ?? 50
-        let lastReps = Sets!.last?.Reps ?? 10
+        let lastSet = Sets!.last ?? SetItem.defaultItem(isDuration: isDuration())
         //var streak = 0
         var dates:[Date] = []
         for item in Sets! {
-            if (item.Reps >= lastReps && item.Weight >= lastWeight) {
+            
+            if (item.isGreaterThan(lastSet)) {
                 if (!dates.contains(item.Timestamp.dateOnly)) {
                     dates.append(item.Timestamp.dateOnly)
                 }
@@ -75,8 +76,15 @@ struct ExerItem : Codable, Hashable, Identifiable, Comparable
     func GetHistory() -> [(Date, String)] {
         if (Sets == nil) { return [] }
         return Sets!.map { set in
-            (set.Timestamp, "@\(set.Weight)lbs x \(set.Reps)")
+            if (isDuration()) {
+                (set.Timestamp, "@\(set.Span!)\(set.Units!.lowercased())")
+            } else {
+                (set.Timestamp, "@\(set.Weight!)lbs x \(set.Reps!)")
+            }
         }
+    }
+    func isDuration() -> Bool {
+        return Duration ?? false
     }
     func GetSetCount(date: Date) -> Int {
         if (Sets == nil) { return 0 }
@@ -87,15 +95,52 @@ struct ExerItem : Codable, Hashable, Identifiable, Comparable
     var Notes: String
     var PerSide: Bool
     var Sets: [SetItem]? = []
+    var Duration: Bool?
 }
 struct SetItem : Codable, Hashable
 {
-    var Weight: Int
-    var Reps: Int
+    var Weight: Int?
+    var Reps: Int?
+    var Span: Float?
+    var Units: String?
     var Timestamp: Date
+    static func defaultItem(isDuration: Bool) -> SetItem {
+        if (isDuration) {
+            return SetItem(Weight: nil, Reps: nil, Span: 0, Units: "Yards", Timestamp: Date.distantPast)
+        } else {
+            return SetItem(Weight: 0, Reps: 0, Span: nil, Units: nil, Timestamp: Date.distantPast)
+        }
+    }
+    func isGreaterThan(_ other: SetItem) -> Bool {
+        if (isDuration()) {
+            return (Span! >= other.Span! && Units! == other.Units!)
+        } else {
+            return (Reps! >= other.Reps! && Weight! >= other.Weight!)
+        }
+    }
+    func getJournalString(itemName: String) -> String {
+        let timeStr = (Timestamp.shortTime)
+        if (isDuration()) {
+            return "\(timeStr) Crushed \(itemName) @\(Span!)\(Units!)"
+        } else {
+            return "\(timeStr) Crushed \(itemName) @\(Weight!)lbs x \(Reps!)"
+        }
+    }
+    func isDuration() -> Bool {
+        return (Span != nil)
+    }
+    func totalWeight() -> Int {
+        if (isDuration()) {
+            return 0
+        } else {
+            return Weight! * Reps!
+        }
+    }
     enum CodingKeys: String, CodingKey {
         case Weight
         case Reps
+        case Span
+        case Units
         case Timestamp
     }
 }

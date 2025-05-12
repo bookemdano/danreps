@@ -24,6 +24,7 @@ struct ExerItemView: View {
     @State var _name: String = ""
     @State var _notes: String = ""
     @State var _perSide: Bool = false
+    @State var _duration: Bool = false
     var body: some View {
         VStack
         {
@@ -37,6 +38,7 @@ struct ExerItemView: View {
                 .frame(height: 80)
                 .border(Color.gray)
             Toggle("Per Side", isOn: $_perSide)
+            Toggle("Duration", isOn: $_duration)
             Spacer()
             if (history != nil) {
                 List{
@@ -84,6 +86,7 @@ struct ExerItemView: View {
         .onAppear {
             _name = exerItem.Name
             _perSide = exerItem.PerSide
+            _duration = exerItem.Duration ?? false
             _notes = exerItem.Notes
         }
         .navigationTitle(exerItem.Name)
@@ -101,7 +104,7 @@ struct ExerItemView: View {
     func Save()
     {
         Task {
-            await ExerPersist.Update(id: exerItem.id, name: _name, perSide: _perSide, notes: _notes)
+            await ExerPersist.Update(id: exerItem.id, name: _name, perSide: _perSide, duration: _duration, notes: _notes)
             presentationMode.wrappedValue.dismiss()
         }
     }

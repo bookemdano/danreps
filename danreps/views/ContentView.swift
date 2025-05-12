@@ -19,8 +19,8 @@ struct ContentView: View {
     @State private var _timer: Timer?
     @State private var _showClearConfirmation = false
     @State private var _rapid = GetRapid()
-    @State private var _weight: Int = 50
-    @State private var _reps: Int = 10
+    @State private var _set: SetItem = SetItem.defaultItem(isDuration: false)
+    @State private var _spanString: String = "0.0"
     @State private var _onDeckId: UUID? = nil
     
     var body: some View {
@@ -46,16 +46,28 @@ struct ContentView: View {
                         Text(String(item.GetStreak()))
                         Spacer()
                         if (item.id == _onDeckId) {
-                            Picker("Weight", selection: $_weight) {
-                                ForEach(Array(stride(from: 25, to: 101, by: 5)), id: \.self) { index in
-                                    Text("\(index)lbs")
-                                        .tag(index)
+                            if (item.Duration == true) {
+                                TextField("Span", text: $_spanString)
+                                    .keyboardType(.decimalPad)
+                                    .background(Color.yellow.opacity(0.2))
+                                Picker("Units", selection: $_set.Units) {
+                                    ForEach(["Yards", "Miles", "Meters", "KM"], id: \.self) { index in
+                                        Text("\(index)")
+                                            .tag(index)
+                                    }
                                 }
-                            }
-                            Picker("Reps", selection: $_reps) {
-                                ForEach([5,8,10,12,15,20,25], id: \.self) { index in
-                                    Text("\(index)")
-                                        .tag(index)
+                            } else {
+                                Picker("Weight", selection: $_set.Weight) {
+                                    ForEach(Array(stride(from: 25, to: 101, by: 5)), id: \.self) { index in
+                                        Text("\(index)lbs")
+                                            .tag(index)
+                                    }
+                                }
+                                Picker("Reps", selection: $_set.Reps) {
+                                    ForEach([5,8,10,12,15,20,25], id: \.self) { index in
+                                        Text("\(index)")
+                                            .tag(index)
+                                    }
                                 }
                             }
                             Button("💥", action: {Crush(_onDeckId!)})
@@ -189,16 +201,21 @@ struct ContentView: View {
     func Serve(_ item: ExerItem)
     {
         _onDeckId = item.id
-        let set = item.GetLastSet()
-        _weight = set.Weight
-        _reps = set.Reps
+        _set = item.GetLastSet()
     }
     func Crush(_ id: UUID)
     {
         if (id != _onDeckId) {
             return
         }
-        _exerSet.Crush(id: id, date: _date, weight: _weight, reps: _reps)
+        if (GetExerItem(id).isDuration()) {
+            if let number = Float(_spanString) {
+                _set.Span = number
+            } else {
+                _set.Span = 9.9
+            }
+        }
+        _exerSet.Crush(id: id, date: _date, set: _set)
         if (_rapid) {
             startTimer(seconds: Double(_exerSet.Interval ?? 60))
         }

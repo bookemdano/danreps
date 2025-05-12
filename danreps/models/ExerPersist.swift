@@ -39,7 +39,7 @@ struct ExerPersist {
         }
         return ExerSet.GetDefault()
     }
-    static func Update(id: UUID, name: String, perSide: Bool, notes: String) async
+    static func Update(id: UUID, name: String, perSide: Bool, duration: Bool, notes: String) async
     {
         Task{
             var exerSet = await Read()
@@ -47,13 +47,14 @@ struct ExerPersist {
             let index = exerSet.ExerItems.firstIndex(where: { $0.id == id})
             if (index == nil)
             {
-                let item = ExerItem(Name: name, Notes: notes, PerSide: perSide)
+                let item = ExerItem(Name: name, Notes: notes, PerSide: perSide, Duration: duration)
                 exerSet.ExerItems.append(item)
             }
             else
             {
                 exerSet.ExerItems[index!].Name = name
                 exerSet.ExerItems[index!].PerSide = perSide
+                exerSet.ExerItems[index!].Duration = duration
                 exerSet.ExerItems[index!].Notes = notes
             }
 
