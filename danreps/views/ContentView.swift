@@ -51,14 +51,14 @@ struct ContentView: View {
                                     .keyboardType(.decimalPad)
                                     .background(Color.yellow.opacity(0.2))
                                 Picker("Units", selection: $_set.Units) {
-                                    ForEach(["Yards", "Miles", "Meters", "KM"], id: \.self) { index in
+                                    ForEach(SetItem.UnitStrings, id: \.self) { index in
                                         Text("\(index)")
                                             .tag(index)
                                     }
                                 }
                             } else {
                                 Picker("Weight", selection: $_set.Weight) {
-                                    ForEach(Array(stride(from: 25, to: 101, by: 5)), id: \.self) { index in
+                                    ForEach(Array(stride(from: 25, to: 251, by: 5)), id: \.self) { index in
                                         Text("\(index)lbs")
                                             .tag(index)
                                     }
@@ -109,8 +109,8 @@ struct ContentView: View {
                 Button("😴"){
                     DNotices.requestNotificationPermission()
 
-                    AddNote("Rest for 5")
-                    startTimer(seconds: 5)
+                    AddNote("Rest for 60")
+                    startTimer(seconds: 60)
                 }.font(.system(size: 36))
                 Button("↩️"){
                     Undo()

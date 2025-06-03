@@ -75,7 +75,7 @@ struct ExerItem : Codable, Hashable, Identifiable, Comparable
     }
     func GetHistory() -> [(Date, String)] {
         if (Sets == nil) { return [] }
-        return Sets!.map { set in
+        return Sets!.sorted{$0.Timestamp < $1.Timestamp}.map{ set in
             if (isDuration()) {
                 (set.Timestamp, "@\(set.Span!)\(set.Units!.lowercased())")
             } else {
@@ -97,6 +97,13 @@ struct ExerItem : Codable, Hashable, Identifiable, Comparable
     var Sets: [SetItem]? = []
     var Duration: Bool?
 }
+enum UnitEnum {
+    case NA
+    case Yards
+    case Meters
+    case Miles
+    case Kilometers
+}
 struct SetItem : Codable, Hashable
 {
     var Weight: Int?
@@ -111,9 +118,45 @@ struct SetItem : Codable, Hashable
             return SetItem(Weight: 0, Reps: 0, Span: nil, Units: nil, Timestamp: Date.distantPast)
         }
     }
+    static var UnitStrings:[String] {
+        return ["Yards", "Miles", "Meters", "KM", "Mins", "Hours"]
+    }
+    var UnitsEnum: UnitEnum {
+        switch Units {
+        case "yards":
+            return .Yards
+        case "meters":
+            return .Meters
+        case "miles":
+            return .Miles
+        case "kilometers":
+            return .Kilometers
+        default:
+            return .NA
+        }
+    }
+    // return span in meters
+    var StandardSpan: Float {
+        if (!isDuration()) {
+            return 0.0
+        } else {
+            if (UnitsEnum == .Yards) {
+                return Span! * 0.9144
+            }
+            else if (UnitsEnum == .Miles) {
+                return Span! * 1609.344
+            }
+            else if (UnitsEnum == .Kilometers) {
+                return Span! * 1000
+            }
+            else {  //if (UnitsEnum == .Meters) {
+                return Span!
+            }
+        }
+    }
     func isGreaterThan(_ other: SetItem) -> Bool {
         if (isDuration()) {
-            return (Span! >= other.Span! && Units! == other.Units!)
+            return (StandardSpan >= other.StandardSpan)
         } else {
             return (Reps! >= other.Reps! && Weight! >= other.Weight!)
         }

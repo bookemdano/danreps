@@ -57,7 +57,8 @@ struct ExerSet : Codable
         exerItems.append(ExerItem(Name: "BB Curls", Notes: "", PerSide: false))
         exerItems.append(ExerItem(Name: "BB Bench", Notes: "", PerSide: false))
         exerItems.append(ExerItem(Name: "BB Clean", Notes: "", PerSide: false))
-        return ExerSet(ExerItems: exerItems)
+        exerItems.append(ExerItem(Name: "Swimming", Notes: "", PerSide: false, Duration: true))
+    return ExerSet(ExerItems: exerItems)
     }
     
     func GetItem(id: UUID) -> ExerItem{
@@ -117,7 +118,7 @@ struct ExerSet : Codable
                 entries.append(set.getJournalString(itemName: item.Name))
             }
         }
-        return entries
+        return entries.sorted()
     }
     // crush
     mutating func Crush(id: UUID, date: Date, set: SetItem)
