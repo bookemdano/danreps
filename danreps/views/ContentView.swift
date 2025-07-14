@@ -64,7 +64,7 @@ struct ContentView: View {
                                     }
                                 }
                                 Picker("Reps", selection: $_set.Reps) {
-                                    ForEach([5,8,10,12,15,20,25], id: \.self) { index in
+                                    ForEach([1,5,8,10,12,15,20,25], id: \.self) { index in
                                         Text("\(index)")
                                             .tag(index)
                                     }
