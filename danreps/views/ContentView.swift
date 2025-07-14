@@ -22,6 +22,7 @@ struct ContentView: View {
     @State private var _set: SetItem = SetItem.defaultItem(isDuration: false)
     @State private var _spanString: String = "0.0"
     @State private var _onDeckId: UUID? = nil
+    @State private var _group: String = "All"
     
     var body: some View {
         NavigationStack{
@@ -40,7 +41,7 @@ struct ContentView: View {
                 }
             }
             List{
-                ForEach(_exerSet.ExerItemsByLastDone(), id: \.self){ item in
+                ForEach(_exerSet.ExerItemsByLastDone(group: _group), id: \.self){ item in
                     HStack{
                         Text(item.description())
                         Text(String(item.GetStreak()))
@@ -100,6 +101,21 @@ struct ContentView: View {
                     .padding()
             }
             HStack {
+                ForEach(_exerSet.GetGroups(), id: \.self) { group in
+                    Button(action: {
+                        ChangeGroup(group)
+                    }) {
+                        Text(group)
+                            .bold()
+                            .foregroundColor(GroupForeground(group))
+                            .background(.white)
+                    }
+                    Spacer()
+                }
+            }
+            .padding()
+            .border(Color.gray)
+            HStack {
                 Toggle("Rapid", isOn: $_rapid).onChange(of: _rapid) {
                     ContentView.SetRapid(_rapid)
                     if (_rapid == false){
@@ -148,6 +164,19 @@ struct ContentView: View {
             return .clear
         }
             
+    }
+    func GroupForeground(_ group: String) -> Color
+    {
+        if (group == _group){
+            return Color.black
+        } else {
+            return Color.gray
+        }
+    }
+    func ChangeGroup(_ group: String)
+    {
+        _group = group
+        Refresh()
     }
     static func SetRapid(_ val: Bool){
         UserDefaults.standard.set(val, forKey: "Rapid")

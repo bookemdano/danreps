@@ -48,6 +48,19 @@ struct ExerSet : Codable
          }*/
         Version = ExerSet.CurrentVersion
     }
+    func GetGroups() -> [String]
+    {
+        var rv = [String]()
+        rv.append("All")
+        ExerItems.forEach { item in
+            item.Groups?.forEach{ group in
+                if (!rv.contains(group)) {
+                    rv.append(group)
+                }
+            }
+        }
+        return rv
+    }
     static func GetDefault() -> ExerSet
     {
         var exerItems:[ExerItem] = []
@@ -96,8 +109,14 @@ struct ExerSet : Codable
 
         ExerItems[idx].Sets = sets
     }
-    func ExerItemsByLastDone() -> [ExerItem] {
-        ExerItems.sorted { $0.GetLastSet().Timestamp > $1.GetLastSet().Timestamp }
+    func ExerItemsByLastDone(group: String) -> [ExerItem] {
+        if (group == "All") {
+            return ExerItems.sorted { $0.GetLastSet().Timestamp > $1.GetLastSet().Timestamp }
+        } else {
+            return ExerItems
+                .filter { $0.Groups?.contains(group) == true }
+                .sorted { $0.GetLastSet().Timestamp > $1.GetLastSet().Timestamp }
+        }
     }
     
     mutating func ClearDay(_ date: Date) {

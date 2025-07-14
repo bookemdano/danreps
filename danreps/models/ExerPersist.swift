@@ -39,7 +39,7 @@ struct ExerPersist {
         }
         return ExerSet.GetDefault()
     }
-    static func Update(id: UUID, name: String, perSide: Bool, duration: Bool, notes: String) async
+    static func Update(id: UUID, name: String, perSide: Bool, duration: Bool, notes: String, csvGroups: String) async
     {
         Task{
             var exerSet = await Read()
@@ -56,6 +56,7 @@ struct ExerPersist {
                 exerSet.ExerItems[index!].PerSide = perSide
                 exerSet.ExerItems[index!].Duration = duration
                 exerSet.ExerItems[index!].Notes = notes
+                exerSet.ExerItems[index!].Groups = csvGroups.components(separatedBy: ",")
             }
 
             await SaveAsync(exerSet)

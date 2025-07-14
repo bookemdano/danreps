@@ -23,6 +23,7 @@ struct ExerItemView: View {
     @State private var _showDeleteConfirmation = false
     @State var _name: String = ""
     @State var _notes: String = ""
+    @State var _groups: String = ""
     @State var _perSide: Bool = false
     @State var _duration: Bool = false
     var body: some View {
@@ -39,6 +40,11 @@ struct ExerItemView: View {
                 .border(Color.gray)
             Toggle("Per Side", isOn: $_perSide)
             Toggle("Duration", isOn: $_duration)
+            HStack{
+                Text("Groups: ")
+                TextField("Groups", text: $_groups)
+                    .border(Color.gray)
+            }
             Spacer()
             if (history != nil) {
                 List{
@@ -88,6 +94,7 @@ struct ExerItemView: View {
             _perSide = exerItem.PerSide
             _duration = exerItem.Duration ?? false
             _notes = exerItem.Notes
+            _groups = exerItem.GetGroupsString()
         }
         .navigationTitle(exerItem.Name)
     }
@@ -104,7 +111,7 @@ struct ExerItemView: View {
     func Save()
     {
         Task {
-            await ExerPersist.Update(id: exerItem.id, name: _name, perSide: _perSide, duration: _duration, notes: _notes)
+            await ExerPersist.Update(id: exerItem.id, name: _name, perSide: _perSide, duration: _duration, notes: _notes, csvGroups: _groups)
             presentationMode.wrappedValue.dismiss()
         }
     }

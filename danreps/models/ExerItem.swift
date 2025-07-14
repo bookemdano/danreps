@@ -30,6 +30,7 @@ struct ExerItem : Codable, Hashable, Identifiable, Comparable
         case PerSide
         case Duration
         case Sets
+        case Groups
     }
 
     // uncrush
@@ -90,12 +91,20 @@ struct ExerItem : Codable, Hashable, Identifiable, Comparable
         if (Sets == nil) { return 0 }
         return Sets!.filter { $0.Timestamp.dateOnly == date }.count
     }
+    func GetGroupsString() -> String {
+        if (Groups == nil) {
+            return ""
+        } else {
+            return Groups!.joined(separator: ",")
+        }
+    }
     var id = UUID() // Automatically generate a unique identifier
     var Name: String
     var Notes: String
     var PerSide: Bool
     var Sets: [SetItem]? = []
     var Duration: Bool?
+    var Groups: [String]?
 }
 enum UnitEnum {
     case NA
