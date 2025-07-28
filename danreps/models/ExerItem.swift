@@ -7,8 +7,18 @@
 import Foundation
 import DanSwiftLib
 
-struct ExerItem : Codable, Hashable, Identifiable, Comparable
+class ExerItem : Codable, Hashable, Identifiable, Comparable
 {
+    
+    init(Name: String, Notes: String, PerSide: Bool, Duration: Bool = false, Groups: [String] = []) {
+        self.id = UUID()
+        self.Name = Name
+        self.Notes = Notes
+        self.PerSide = PerSide
+        self.Duration = Duration
+        self.Groups = Groups
+    }
+    
     static func < (lhs: ExerItem, rhs: ExerItem) -> Bool {
         return lhs.Name < rhs.Name
     }
@@ -22,6 +32,14 @@ struct ExerItem : Codable, Hashable, Identifiable, Comparable
         }
 
         return rv
+    }
+    // for equatable
+    static func == (lhs: ExerItem, rhs: ExerItem) -> Bool {
+        return lhs.id == rhs.id
+    }
+    // for hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
     enum CodingKeys: String, CodingKey {
         case id
@@ -96,6 +114,25 @@ struct ExerItem : Codable, Hashable, Identifiable, Comparable
             return ""
         } else {
             return Groups!.joined(separator: ",")
+        }
+    }
+    func isInGroup(_ group: String) -> Bool {
+        if (Groups == nil) {
+            return false
+        } else {
+            return Groups!.contains(group)
+        }
+    }
+    func addGroup(_ group: String) {
+        if (Groups == nil) {
+            Groups = [group]
+        } else {
+            Groups!.append(group)
+        }
+    }
+    func removeGroup(_ group: String) {
+        if let index = Groups?.firstIndex(of: group) {
+            Groups?.remove(at: index)
         }
     }
     var id = UUID() // Automatically generate a unique identifier

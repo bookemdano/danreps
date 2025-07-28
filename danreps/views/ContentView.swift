@@ -136,6 +136,12 @@ struct ContentView: View {
                     Text("⚙️")
                         .font(.system(size: 36))
                 }
+                if (_group != "All") {
+                    NavigationLink(destination: AddToGroupView(exerSet: _exerSet, group: _group)) {
+                        Text("⟴")
+                            .font(.system(size: 36))
+                    }
+                }
                 Button("🆑"){
                     _showClearConfirmation = true
                 }.font(.system(size: 36))

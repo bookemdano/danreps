@@ -114,7 +114,7 @@ struct ExerSet : Codable
             return ExerItems.sorted { $0.GetLastSet().Timestamp > $1.GetLastSet().Timestamp }
         } else {
             return ExerItems
-                .filter { $0.Groups?.contains(group) == true }
+                .filter { $0.Groups?.contains(group) == true }  // TODO- maybe show ones not in group but done today
                 .sorted { $0.GetLastSet().Timestamp > $1.GetLastSet().Timestamp }
         }
     }
