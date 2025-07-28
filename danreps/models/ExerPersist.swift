@@ -47,7 +47,7 @@ struct ExerPersist {
             let index = exerSet.ExerItems.firstIndex(where: { $0.id == id})
             if (index == nil)
             {
-                let item = ExerItem(Name: name, Notes: notes, PerSide: perSide, Duration: duration)
+                let item = ExerItem(Name: name, Notes: notes, PerSide: perSide, Duration: duration, Groups: csvGroups.components(separatedBy: ","))
                 exerSet.ExerItems.append(item)
             }
             else
