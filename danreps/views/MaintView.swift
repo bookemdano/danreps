@@ -5,14 +5,6 @@
 //  Created by Daniel Francis on 2/4/25.
 //
 
-
-//
-//  DidsView.swift
-//  MacLab
-//
-//  Created by Daniel Francis on 1/8/25.
-//
-
 import SwiftUICore
 import SwiftUI
 import DanSwiftLib
@@ -28,11 +20,15 @@ struct MaintView: View {
         NavigationStack{
             List{
                 ForEach(_exerSet.ExerItems, id: \.self){ item in
-                    NavigationLink(destination: ExerItemView(exerItem: item, history: item.GetHistory()))
+                    NavigationLink(destination: ExerItemView(exerItem: item, history: item.GetHistory(), onDone: { onDone() }))
                     {
                         Text(item.description())
                     }
                 }
+            }
+            .onAppear {
+                print("MaintView List onAppear")
+                Refresh()
             }
             Spacer()
             HStack{
@@ -57,20 +53,20 @@ struct MaintView: View {
             }){
                 Text("Save")
             }
-            NavigationLink(destination: ExerItemView(exerItem: ExerItem(Name: "", Notes: "", PerSide: false), history: nil)) {
+            NavigationLink(destination: ExerItemView(exerItem: ExerItem(Name: "", Notes: "", PerSide: false), history: nil, onDone: {onDone()})) {
                 Text("New Item").bold()
             }
         }
-        .navigationTitle("Maintenance")
         .refreshable {
+            print("MaintView refreshable")
             Refresh()
         }
         .onAppear {
+            print("MaintView Stack onAppear")
             Refresh()
         }
-        
+        .navigationTitle("Maintenance")
     }
-
 
     func signOut()
     {
@@ -86,9 +82,14 @@ struct MaintView: View {
             Refresh()
         }
     }
-    
+    func onDone()
+    {
+        print("MaintView onDone")
+        Refresh()
+    }
     func Refresh()
     {
+        print("MaintView Refresh()")
         Task{
             _exerSet.Refresh(other: await ExerPersist.Read(), date: Date());
             _wait = String(_exerSet.Interval ?? 60)

@@ -26,6 +26,8 @@ struct ExerItemView: View {
     @State var _groups: String = ""
     @State var _perSide: Bool = false
     @State var _duration: Bool = false
+    var onDone: () -> Void
+
     var body: some View {
         VStack
         {
@@ -95,6 +97,12 @@ struct ExerItemView: View {
             _duration = exerItem.Duration ?? false
             _notes = exerItem.Notes
             _groups = exerItem.GetGroupsString()
+            print("ExerItemView onAppear")
+        }
+        .onDisappear {
+            print("ExerItemView onDisappear")
+            print("ExerItemView onDone")
+            onDone()
         }
         .navigationTitle(exerItem.Name)
     }
