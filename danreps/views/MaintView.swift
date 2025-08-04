@@ -19,7 +19,7 @@ struct MaintView: View {
     var body: some View {
         NavigationStack{
             List{
-                ForEach(_exerSet.ExerItems, id: \.self){ item in
+                ForEach(_exerSet.ExerItems, id: \.id){ item in
                     NavigationLink(destination: ExerItemView(exerItem: item, history: item.GetHistory(), onDone: { onDone() }))
                     {
                         Text(item.description())
@@ -37,6 +37,11 @@ struct MaintView: View {
                 TextField("Wait(secs)", text: $_wait)
                     .keyboardType(.numberPad)
                     .background(Color.yellow.opacity(0.2))
+                    .onChange(of: _wait, initial: false) { n, newValue in
+                        _exerSet.Interval = Int(newValue) ?? 60
+                        _wait = newValue
+                        save()
+                    }
             }
             if (!_welcomed) {
                 SignInWithAppleButtonView($_welcomed)
@@ -48,11 +53,6 @@ struct MaintView: View {
                 }
             }
 
-            Button(action: {
-                save()
-            }){
-                Text("Save")
-            }
             NavigationLink(destination: ExerItemView(exerItem: ExerItem(Name: "", Notes: "", PerSide: false), history: nil, onDone: {onDone()})) {
                 Text("New Item").bold()
             }
@@ -87,6 +87,7 @@ struct MaintView: View {
         print("MaintView onDone")
         Refresh()
     }
+
     func Refresh()
     {
         print("MaintView Refresh()")

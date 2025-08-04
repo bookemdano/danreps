@@ -57,19 +57,10 @@ struct ExerItemView: View {
                 Spacer()
             }
             HStack{
-                Button(action: {
-                    Save()
-                }){
-                    Text("Save")
-                }.padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-                Button("Delete") {
+     
+                Button("🗑️") {
                     _showDeleteConfirmation = true
                 }.padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
                     .cornerRadius(8)
                 .confirmationDialog("Are you sure?", isPresented: $_showDeleteConfirmation, titleVisibility: .visible) {
                     Button("Delete", role: .destructive) {
@@ -79,14 +70,6 @@ struct ExerItemView: View {
                 } message: {
                     Text("This action cannot be undone. Deleting means it never was.")
                 }
-                Button(action: {
-                    presentationMode.wrappedValue.dismiss()
-                }){
-                    Text("Cancel")
-                }.padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
             }
 
         }
@@ -101,7 +84,7 @@ struct ExerItemView: View {
         }
         .onDisappear {
             print("ExerItemView onDisappear")
-            print("ExerItemView onDone")
+            Save()
             onDone()
         }
         .navigationTitle(exerItem.Name)
@@ -110,6 +93,7 @@ struct ExerItemView: View {
     
     func Delete()
     {
+        print("ExerItemView Delete()")
         Task {
             await ExerPersist.Remove(id: exerItem.id)
             presentationMode.wrappedValue.dismiss()
@@ -118,6 +102,7 @@ struct ExerItemView: View {
     
     func Save()
     {
+        print("ExerItemView Save()")
         Task {
             await ExerPersist.Update(id: exerItem.id, name: _name, perSide: _perSide, duration: _duration, notes: _notes, csvGroups: _groups)
             presentationMode.wrappedValue.dismiss()
