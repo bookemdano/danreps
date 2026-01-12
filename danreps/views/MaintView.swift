@@ -5,7 +5,6 @@
 //  Created by Daniel Francis on 2/4/25.
 //
 
-import SwiftUICore
 import SwiftUI
 import DanSwiftLib
 
@@ -19,7 +18,12 @@ struct MaintView: View {
     var body: some View {
         NavigationStack{
             List{
-                ForEach(_exerSet.ExerItems, id: \.id){ item in
+                ForEach(
+                    _exerSet.ExerItems.sorted {
+                        $0.description().localizedCaseInsensitiveCompare($1.description()) == .orderedAscending
+                    },
+                    id: \.id
+                ) { item in
                     NavigationLink(destination: ExerItemView(exerItem: item, history: item.GetHistory(), onDone: { onDone() }))
                     {
                         Text(item.description())

@@ -84,16 +84,16 @@ struct ContentView: View {
                     }.background(BackgroundColor(item.id))
                 }
             }
-            List{
-                let notes = _exerSet.GetJournal(date: _date)
-                ForEach(notes.reversed(), id: \.self){ note in
-                    Text(note)
-                        .font(.caption)
-                        .fontWeight(.thin)
-                }
+            let notes = _exerSet.GetJournal(date: _date)
+
+            ScrollView {
+                Text(notes.joined(separator: "\n"))
+                    .font(.caption)
+                    .fontWeight(.thin)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 4)
             }
-                .frame(maxHeight: 200)
-                .listStyle(.plain)
+            .frame(maxHeight: _exerSet.JournalHeight(notes: notes))
             if (_end != nil) {
                 Text(_countdownString)
                     .font(.system(size: 48, weight: .bold)) // Large Text

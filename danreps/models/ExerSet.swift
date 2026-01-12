@@ -51,7 +51,6 @@ struct ExerSet : Codable
     func GetGroups() -> [String]
     {
         var rv = [String]()
-        rv.append("All")
         ExerItems.forEach { item in
             item.Groups?.forEach{ group in
                 if (!rv.contains(group)) {
@@ -59,6 +58,8 @@ struct ExerSet : Codable
                 }
             }
         }
+        rv = rv.sorted()
+        rv.insert("ALL", at: 0)
         return rv
     }
     static func GetDefault() -> ExerSet
@@ -127,7 +128,13 @@ struct ExerSet : Codable
             }
         }
     }
-
+    func JournalHeight(notes: [String]) -> CGFloat {
+        var rv = notes.count * 20
+        if (rv > 150) {
+            return 150;
+        }
+        return CGFloat(rv)
+    }
     func GetJournal(date: Date) -> [String] {
         var entries: [String] = []
         for item in ExerItems {

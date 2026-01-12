@@ -43,11 +43,14 @@ struct ExerPersist {
     {
         Task{
             var exerSet = await Read()
-
+            let groups = csvGroups
+                .split(separator: ",")
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            
             let index = exerSet.ExerItems.firstIndex(where: { $0.id == id})
             if (index == nil)
             {
-                let item = ExerItem(Name: name, Notes: notes, PerSide: perSide, Duration: duration, Groups: csvGroups.components(separatedBy: ","))
+                let item = ExerItem(Name: name, Notes: notes, PerSide: perSide, Duration: duration, Groups: groups)
                 exerSet.ExerItems.append(item)
             }
             else
@@ -56,7 +59,7 @@ struct ExerPersist {
                 exerSet.ExerItems[index!].PerSide = perSide
                 exerSet.ExerItems[index!].Duration = duration
                 exerSet.ExerItems[index!].Notes = notes
-                exerSet.ExerItems[index!].Groups = csvGroups.components(separatedBy: ",")
+                exerSet.ExerItems[index!].Groups = groups
             }
 
             await SaveAsync(exerSet)

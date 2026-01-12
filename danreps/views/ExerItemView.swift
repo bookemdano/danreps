@@ -13,7 +13,6 @@
 //  Created by Daniel Francis on 1/10/25.
 //
 
-import SwiftUICore
 import SwiftUI
 
 struct ExerItemView: View {
