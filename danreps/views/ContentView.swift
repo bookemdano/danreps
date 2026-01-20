@@ -22,7 +22,7 @@ struct ContentView: View {
     @State private var _set: SetItem = SetItem.defaultItem(isDuration: false)
     @State private var _spanString: String = "0.0"
     @State private var _onDeckId: UUID? = nil
-    @State private var _group: String = "All"
+    @State private var _group: String = "ALL"
     
     var body: some View {
         NavigationStack{
@@ -42,45 +42,48 @@ struct ContentView: View {
             }
             List{
                 ForEach(_exerSet.ExerItemsByLastDone(group: _group), id: \.self){ item in
-                    HStack{
-                        Text(item.description())
-                        Text(String(item.GetStreak()))
-                        Spacer()
-                        if (item.id == _onDeckId) {
-                            if (item.Duration == true) {
-                                TextField("Span", text: $_spanString)
-                                    .keyboardType(.decimalPad)
-                                    .background(Color.yellow.opacity(0.2))
-                                Picker("Units", selection: $_set.Units) {
-                                    ForEach(SetItem.UnitStrings, id: \.self) { index in
-                                        Text("\(index)")
-                                            .tag(index)
-                                    }
-                                }
-                            } else {
-                                Picker("Weight", selection: $_set.Weight) {
-                                    ForEach(Array(stride(from: 25, to: 251, by: 5)), id: \.self) { index in
-                                        Text("\(index)lbs")
-                                            .tag(index)
-                                    }
-                                }
-                                Picker("Reps", selection: $_set.Reps) {
-                                    ForEach([1,5,8,10,12,15,20,25], id: \.self) { index in
-                                        Text("\(index)")
-                                            .tag(index)
-                                    }
-                                }
-                            }
-                            Button("💥", action: {Crush(_onDeckId!)})
-                                .padding(12)
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                                .buttonStyle(PlainButtonStyle())
-                        } else {
+                    VStack{
+                        HStack{
+                            Text(item.description())
+                            Text(String(item.GetStreak()))
+                            Spacer()
                             Button("", action: {Serve(item)})
+                            Text(String(item.GetSetCount(date: _date)))
                         }
-                        Text(String(item.GetSetCount(date: _date)))
+                        if (item.id == _onDeckId) {
+                            HStack{
+                                if (item.Duration == true) {
+                                    TextField("Span", text: $_spanString)
+                                        .keyboardType(.decimalPad)
+                                        .background(Color.yellow.opacity(0.2))
+                                    Picker("Units", selection: $_set.Units) {
+                                        ForEach(SetItem.UnitStrings, id: \.self) { index in
+                                            Text("\(index)")
+                                                .tag(index)
+                                        }
+                                    }
+                                } else {
+                                    Picker("Wgt", selection: $_set.Weight) {
+                                        ForEach(Array(stride(from: 0, to: 301, by: 5)), id: \.self) { index in
+                                            Text("\(index)lbs")
+                                                .tag(index)
+                                        }
+                                    }.fixedSize().frame(maxWidth: .infinity)
+                                    Picker("Reps", selection: $_set.Reps) {
+                                        ForEach([1,5,8,10,12,15,20,25], id: \.self) { index in
+                                            Text("\(index)")
+                                                .tag(index)
+                                        }
+                                    }.fixedSize().frame(maxWidth: .infinity)
+                                }
+                                Button("💥", action: {Crush(_onDeckId!)})
+                                    .padding(12)
+                                    .background(Color.blue)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
+                                    .buttonStyle(PlainButtonStyle())
+                            }
+                        }
                     }.background(BackgroundColor(item.id))
                 }
             }
@@ -100,28 +103,26 @@ struct ContentView: View {
                     .foregroundColor(.green) // Green Color
                     .padding()
             }
+     
+  
             HStack {
-                ForEach(_exerSet.GetGroups(), id: \.self) { group in
-                    Button(action: {
-                        ChangeGroup(group)
-                    }) {
-                        Text(group)
-                            .bold()
-                            .foregroundColor(GroupForeground(group))
-                            .background(.white)
+                Picker("Groups", selection: $_group) {
+                    ForEach(_exerSet.GetGroups(), id: \.self) { group in
+                        Text("\(group)")
+                            .tag(group)
                     }
-                    Spacer()
                 }
-            }
-            .padding()
-            .border(Color.gray)
-            HStack {
-                Toggle("Rapid", isOn: $_rapid).onChange(of: _rapid) {
-                    ContentView.SetRapid(_rapid)
-                    if (_rapid == false){
+                .onChange(of: _group) { oldValue, newValue in
+                    ChangeGroup(newValue)
+                }
+                .fixedSize()
+                Toggle("R", isOn: $_rapid).onChange(of: _rapid) { newValue, _ in
+                    ContentView.SetRapid(newValue)
+                    if newValue == false {
                         stopTimer()
                     }
                 }
+                .fixedSize()
                 Button("😴"){
                     DNotices.requestNotificationPermission()
 

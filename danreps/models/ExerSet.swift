@@ -111,7 +111,7 @@ struct ExerSet : Codable
         ExerItems[idx].Sets = sets
     }
     func ExerItemsByLastDone(group: String) -> [ExerItem] {
-        if (group == "All") {
+        if (group.uppercased() == "ALL") {
             return ExerItems.sorted { $0.GetLastSet().Timestamp > $1.GetLastSet().Timestamp }
         } else {
             return ExerItems
