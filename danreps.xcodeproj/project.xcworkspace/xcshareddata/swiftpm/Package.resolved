@@ -1,5 +1,5 @@
 {
-  "originHash" : "0dcb9bbc0318726993a23ecfdab83debcde85a5159253ef9b0847cf9b678f39f",
+  "originHash" : "e9b33a7f9bf8eaf643d58c067e32ac9f70d0faddbe313217a19e970ed039fc08",
   "pins" : [
     {
       "identity" : "aws-sdk-ios-spm",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "512a43ed2770957d40618ad415a9826e6dd99ea9",
         "version" : "2.40.1"
+      }
+    },
+    {
+      "identity" : "swiftanthropic",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jamesrochabrun/SwiftAnthropic",
+      "state" : {
+        "revision" : "7262ced65e890ea5311193b849786344432d8fa7",
+        "version" : "1.8.6"
       }
     }
   ],

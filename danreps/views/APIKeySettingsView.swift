@@ -22,6 +22,7 @@ struct APIKeySettingsView: View {
                     SecureField("sk-ant-...", text: $apiKey)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .font(.system(.body, design: .monospaced))
 
                     if keyExists {
                         Text("✓ API Key is saved")
