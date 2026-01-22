@@ -15,6 +15,8 @@ struct MaintView: View {
     @State private var _wait: String = "60"
     @State private var _showingAlert = false
     @State private var _deleteItem: String = ""
+    @State private var _showAPIKeySettings = false
+
     var body: some View {
         NavigationStack{
             List{
@@ -34,7 +36,13 @@ struct MaintView: View {
                 print("MaintView List onAppear")
                 Refresh()
             }
+            .sheet(isPresented: $_showAPIKeySettings) {
+                APIKeySettingsView()
+            }
             Spacer()
+            Button("🔑"){
+                _showAPIKeySettings = true
+            }.font(.system(size: 36))
             HStack{
                 Text("Wait(secs): ")
                 Spacer()

@@ -23,7 +23,9 @@ struct ContentView: View {
     @State private var _spanString: String = "0.0"
     @State private var _onDeckId: UUID? = nil
     @State private var _group: String = "ALL"
-    
+    @State private var _summary: String = ""
+    @State private var _showSummary = false
+
     var body: some View {
         NavigationStack{
             HStack{
@@ -125,18 +127,22 @@ struct ContentView: View {
                 .fixedSize()
                 Button("😴"){
                     DNotices.requestNotificationPermission()
-
+        
                     AddNote("Rest for 60")
                     startTimer(seconds: 60)
                 }.font(.system(size: 36))
                 Button("↩️"){
                     Undo()
                 }
-                    .font(.system(size: 36))
                 NavigationLink(destination: MaintView()) {
                     Text("⚙️")
                         .font(.system(size: 36))
                 }
+                Button("🤖"){
+                    Task {
+                        await GetClaudeSummary()
+                    }
+                }.font(.system(size: 36))
                 Button("🆑"){
                     _showClearConfirmation = true
                 }.font(.system(size: 36))
@@ -148,6 +154,29 @@ struct ContentView: View {
                 } message: {
                     Text("This action cannot be undone. Deleting means it never was.")
                 }
+                .sheet(isPresented: $_showSummary) {
+                    VStack {
+                        Text("AI Coach")
+                            .font(.headline)
+                            .padding()
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 8) {
+                                let lines = processMarkdown(_summary)
+                                ForEach(0..<lines.count, id: \.self) { index in
+                                    lines[index]
+                                }
+                            }
+                            .textSelection(.enabled)
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        Button("Done") {
+                            _showSummary = false
+                        }
+                        .padding()
+                    }
+                }
+
             }
             .navigationTitle("Ready to Crush")
             .refreshable {
@@ -291,6 +320,92 @@ struct ContentView: View {
         Task{
             _exerSet.Refresh(other: await ExerPersist.Read(), date: _date);
         }
+    }
+
+    func GetClaudeSummary() async {
+        let workoutData = _exerSet.DaySummary(date: _date)
+
+        guard let apiKey = KeychainService.shared.getAPIKey() else {
+            _summary = "Please set your API key using the 🔑 button"
+            _showSummary = true
+            return
+        }
+
+        // Validate API key format
+        if !apiKey.starts(with: "sk-ant-") {
+            _summary = "Invalid API key format. Key should start with 'sk-ant-'"
+            _showSummary = true
+            return
+        }
+
+        _summary = "Loading summary..."
+        _showSummary = true
+
+        do {
+            let claude = ClaudeService()
+            _summary = try await claude.prompt("This is what I did today for my workout. How did I do? \(workoutData)")
+        } catch {
+            _summary = "Error: \(error)\n\nAPI Key prefix: \(String(apiKey.prefix(10)))..."
+        }
+    }
+
+    func processMarkdown(_ markdown: String) -> [Text] {
+        var result: [Text] = []
+        let lines = markdown.components(separatedBy: "\n")
+
+        for line in lines {
+            var text = Text("")
+            var currentLine = line
+
+            // Handle headers
+            if currentLine.hasPrefix("### ") {
+                text = Text(currentLine.replacingOccurrences(of: "### ", with: ""))
+                    .font(.title3)
+                    .bold()
+            } else if currentLine.hasPrefix("## ") {
+                text = Text(currentLine.replacingOccurrences(of: "## ", with: ""))
+                    .font(.title2)
+                    .bold()
+            } else if currentLine.hasPrefix("# ") {
+                text = Text(currentLine.replacingOccurrences(of: "# ", with: ""))
+                    .font(.title)
+                    .bold()
+            } else {
+                // Process inline markdown (bold, italic)
+                text = parseInlineMarkdown(currentLine)
+            }
+
+            result.append(text)
+        }
+
+        return result
+    }
+
+    func parseInlineMarkdown(_ line: String) -> Text {
+        var result = Text("")
+        var currentText = line
+
+        // Simple regex-free parsing for **bold** and *italic*
+        while !currentText.isEmpty {
+            if let boldRange = currentText.range(of: "\\*\\*[^*]+\\*\\*", options: .regularExpression) {
+                let beforeBold = String(currentText[..<boldRange.lowerBound])
+                let boldText = String(currentText[boldRange]).replacingOccurrences(of: "**", with: "")
+
+                result = result + Text(beforeBold) + Text(boldText).bold()
+                currentText = String(currentText[boldRange.upperBound...])
+            } else if let italicRange = currentText.range(of: "\\*[^*]+\\*", options: .regularExpression) {
+                let beforeItalic = String(currentText[..<italicRange.lowerBound])
+                let italicText = String(currentText[italicRange]).replacingOccurrences(of: "*", with: "")
+
+                result = result + Text(beforeItalic) + Text(italicText).italic()
+                currentText = String(currentText[italicRange.upperBound...])
+            } else {
+                result = result + Text(currentText)
+                break
+            }
+        }
+
+        return result
     }
 
 }

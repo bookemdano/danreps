@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A9853C002F22783800784E1C /* SwiftAnthropic in Frameworks */ = {isa = PBXBuildFile; productRef = A9853BFF2F22783800784E1C /* SwiftAnthropic */; };
 		A9D350782D74B21E005549AC /* DanSwiftLib in Frameworks */ = {isa = PBXBuildFile; productRef = A9D350772D74B21E005549AC /* DanSwiftLib */; };
 		A9F5A7992DA05F9300BBB395 /* DanSwiftLib in Frameworks */ = {isa = PBXBuildFile; productRef = A9F5A7982DA05F9300BBB395 /* DanSwiftLib */; };
 		A9F5A79C2DA0645E00BBB395 /* DanSwiftLib in Frameworks */ = {isa = PBXBuildFile; productRef = A9F5A79B2DA0645E00BBB395 /* DanSwiftLib */; };
@@ -36,6 +37,7 @@
 				A9D350782D74B21E005549AC /* DanSwiftLib in Frameworks */,
 				A9F5A7992DA05F9300BBB395 /* DanSwiftLib in Frameworks */,
 				A9F5A79C2DA0645E00BBB395 /* DanSwiftLib in Frameworks */,
+				A9853C002F22783800784E1C /* SwiftAnthropic in Frameworks */,
 				E5E7A26661E59BE68C4BACDD /* Pods_danreps.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -128,6 +130,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				A9F5A79A2DA0645E00BBB395 /* XCLocalSwiftPackageReference "../DanSwiftLib" */,
+				A9853BFE2F22783800784E1C /* XCRemoteSwiftPackageReference "SwiftAnthropic" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A967BC502D4E6AF5007378D7 /* Products */;
@@ -413,7 +416,23 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		A9853BFE2F22783800784E1C /* XCRemoteSwiftPackageReference "SwiftAnthropic" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jamesrochabrun/SwiftAnthropic";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.4.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
+		A9853BFF2F22783800784E1C /* SwiftAnthropic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A9853BFE2F22783800784E1C /* XCRemoteSwiftPackageReference "SwiftAnthropic" */;
+			productName = SwiftAnthropic;
+		};
 		A9D350772D74B21E005549AC /* DanSwiftLib */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DanSwiftLib;

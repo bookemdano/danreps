@@ -129,7 +129,7 @@ struct ExerSet : Codable
         }
     }
     func JournalHeight(notes: [String]) -> CGFloat {
-        var rv = notes.count * 20
+        let rv = notes.count * 20
         if (rv > 150) {
             return 150;
         }
@@ -145,6 +145,18 @@ struct ExerSet : Codable
             }
         }
         return entries.sorted()
+    }
+    func DaySummary(date: Date) -> String {
+        let items = ExerItems.filter { $0.GetSetCount(date: date) > 0 }
+        var rv:[String] = []
+        for item in items {
+            rv.append("\(item.Name) - \(item.GetSetCount(date: date))")
+            let sets = item.GetSetsOn(date: date)
+            for set in sets {
+                rv.append("\(set.getJournalString(itemName: item.Name))")
+            }
+        }
+        return rv.joined(separator: "\n")
     }
     // crush
     mutating func Crush(id: UUID, date: Date, set: SetItem)
