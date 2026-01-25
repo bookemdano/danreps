@@ -14,12 +14,14 @@ struct ExerSet : Codable
     var Interval: Int? = 60
     var CoachPrompt: String?
     var Version: String?
+    var DayItems: [DayItem]?
     static public let CurrentVersion = "1.0.1"  // added Sets to Items
     enum CodingKeys: String, CodingKey {
         case ExerItems
         case Interval
         case Version
         case CoachPrompt
+        case DayItems
     }
     mutating func Refresh(other: ExerSet, date: Date){
         ExerItems.removeAll(keepingCapacity: false)
@@ -38,6 +40,7 @@ struct ExerSet : Codable
     func DefaultCoachPrompt() -> String{
         return "This is what I did today for my workout. Tell me how I did and score it out of 10"
     }
+
     mutating func UpdateVersion()
     {
         // nil to 1.0.0
@@ -161,7 +164,7 @@ struct ExerSet : Codable
     func DaySummary(date: Date) -> String {
         let items = ExerItems.filter { $0.GetSetCount(date: date) > 0 }
         var rv:[String] = [SetItem.getCsvHeader()]
-        
+
         for item in items {
             let sets = item.GetSetsOn(date: date)
             for set in sets {
@@ -170,6 +173,28 @@ struct ExerSet : Codable
         }
         return rv.joined(separator: "\n")
     }
+    func getCoachingString(for date: Date) -> String? {
+        guard let dayItem = DayItems?.first(where: { $0.Date.dateOnly == date.dateOnly }) else {
+            return nil
+        }
+        return dayItem.Coaching
+    }
+    mutating func setCoachingString(for date: Date, coaching: String?) {
+
+        if DayItems == nil {
+            DayItems = []
+        }
+        if (coaching == nil) {
+            DayItems!.removeAll(where: { $0.Date.dateOnly == date.dateOnly })
+            return
+        }
+        if let index = DayItems?.firstIndex(where: { $0.Date.dateOnly == date.dateOnly }) {
+            DayItems?[index].Coaching = coaching!
+        } else {
+            DayItems?.append(DayItem(Date: date.dateOnly, Coaching: coaching!))
+        }
+    }
+    
     // crush
     mutating func Crush(id: UUID, date: Date, set: SetItem)
     {
@@ -211,4 +236,12 @@ struct ExerSet : Codable
      }
      */
 }
-
+struct DayItem : Codable
+{
+    var Date: Date
+    var Coaching: String
+    enum CodingKeys: String, CodingKey {
+        case Date
+        case Coaching
+    }
+}

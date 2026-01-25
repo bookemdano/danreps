@@ -171,11 +171,16 @@ struct ContentView: View {
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
+                        Button("Clear") {
+                            _exerSet.setCoachingString(for: _date, coaching: nil)
+                            _showSummary = false
+                        }
+                        .padding()
                         Button("Done") {
                             _showSummary = false
                         }
                         .padding()
-                    }
+              }
                 }
 
             }
@@ -324,30 +329,40 @@ struct ContentView: View {
     }
 
     func GetClaudeSummary() async {
+        // Check if we already have coaching for this date
+        if let cachedCoaching = _exerSet.getCoachingString(for: _date) {
+            _summary = cachedCoaching
+            _showSummary = true
+            return
+        }
+
         let workoutData = _exerSet.DaySummary(date: _date)
-        
-        
+
         guard let apiKey = KeychainService.shared.getAPIKey() else {
             _summary = "Please set your API key using the 🔑 button"
             _showSummary = true
             return
         }
-        
+
         // Validate API key format
         if !apiKey.starts(with: "sk-ant-") {
             _summary = "Invalid API key format. Key should start with 'sk-ant-'"
             _showSummary = true
             return
         }
-        
+
         _summary = "Loading summary..."
         _showSummary = true
-        
+
         do {
             let claude = ClaudeService()
             let prompt = "\(_exerSet.GetCoachPrompt()) \(workoutData)"
             print(prompt)
             _summary = try await claude.prompt(prompt)
+
+            // Save the coaching string to the ExerSet
+            _exerSet.setCoachingString(for: _date, coaching: _summary)
+            ExerPersist.SaveSync(_exerSet)
         } catch {
             _summary = "Error: \(error)\n\nAPI Key prefix: \(String(apiKey.prefix(10)))..."
         }
