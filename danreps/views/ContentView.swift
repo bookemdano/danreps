@@ -343,7 +343,7 @@ struct ContentView: View {
 
         do {
             let claude = ClaudeService()
-            _summary = try await claude.prompt("This is what I did today for my workout. Tell me how I did and score it out of 10 \(workoutData)")
+            _summary = try await claude.prompt("\(_exerSet.GetCoachPrompt()) \(workoutData)")
         } catch {
             _summary = "Error: \(error)\n\nAPI Key prefix: \(String(apiKey.prefix(10)))..."
         }

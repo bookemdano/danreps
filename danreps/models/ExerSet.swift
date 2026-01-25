@@ -12,12 +12,14 @@ struct ExerSet : Codable
 {
     var ExerItems: [ExerItem]
     var Interval: Int? = 60
+    var CoachPrompt: String?
     var Version: String?
     static public let CurrentVersion = "1.0.1"  // added Sets to Items
     enum CodingKeys: String, CodingKey {
         case ExerItems
         case Interval
         case Version
+        case CoachPrompt
     }
     mutating func Refresh(other: ExerSet, date: Date){
         ExerItems.removeAll(keepingCapacity: false)
@@ -25,6 +27,16 @@ struct ExerSet : Codable
         Interval = other.Interval
         
         Version = other.Version
+        CoachPrompt = other.CoachPrompt
+    }
+    func GetCoachPrompt() -> String{
+        if (CoachPrompt == nil) {
+            return DefaultCoachPrompt()
+        }
+        return CoachPrompt!
+    }
+    func DefaultCoachPrompt() -> String{
+        return "This is what I did today for my workout. Tell me how I did and score it out of 10"
     }
     mutating func UpdateVersion()
     {
