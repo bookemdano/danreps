@@ -64,12 +64,26 @@ struct SetItem : Codable, Hashable
             return (Reps! >= other.Reps! && Weight! >= other.Weight!)
         }
     }
+    static func getCsvHeader() -> String {
+        return "Time,Item,Weight(lbs),Reps,Span,Units"
+    }
+    func getCsv(itemName: String) -> String {
+        let weightStr = Weight == nil ? "" : String(Weight!)
+        let repsStr = Reps == nil ? "" : String(Reps!)
+        let spanStr = Span == nil ? "" : String(format: "%g", Span!)
+        let unitsStr = Units ?? ""
+        return "\(Timestamp),\(itemName),\(weightStr),\(repsStr),\(spanStr),\(unitsStr)"
+    }
     func getJournalString(itemName: String) -> String {
         let timeStr = (Timestamp.shortTime)
         if (isDuration()) {
-            return "\(timeStr) Crushed \(itemName) @\(Span!)\(Units!)"
+            let spanStr = String(format: "%g", Span ?? 0.0)
+            let unitsStr = Units ?? "-"
+            return "\(timeStr) Crushed \(itemName) @\(spanStr)\(unitsStr)"
         } else {
-            return "\(timeStr) Crushed \(itemName) @\(Weight!)lbs x \(Reps!)"
+            let weightStr = String(Weight ?? 0)
+            let repsStr = String(Reps ?? 0)
+            return "\(timeStr) Crushed \(itemName) @\(weightStr)lbs x \(repsStr)"
         }
     }
     func isDuration() -> Bool {

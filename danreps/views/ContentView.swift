@@ -9,6 +9,7 @@ import SwiftUI
 import AVFoundation
 import AVFAudio
 import DanSwiftLib
+import UIKit
 
 struct ContentView: View {
     @State private var _exerSet: ExerSet = .GetDefault()
@@ -324,29 +325,33 @@ struct ContentView: View {
 
     func GetClaudeSummary() async {
         let workoutData = _exerSet.DaySummary(date: _date)
-
+        
+        
         guard let apiKey = KeychainService.shared.getAPIKey() else {
             _summary = "Please set your API key using the 🔑 button"
             _showSummary = true
             return
         }
-
+        
         // Validate API key format
         if !apiKey.starts(with: "sk-ant-") {
             _summary = "Invalid API key format. Key should start with 'sk-ant-'"
             _showSummary = true
             return
         }
-
+        
         _summary = "Loading summary..."
         _showSummary = true
-
+        
         do {
             let claude = ClaudeService()
-            _summary = try await claude.prompt("\(_exerSet.GetCoachPrompt()) \(workoutData)")
+            let prompt = "\(_exerSet.GetCoachPrompt()) \(workoutData)"
+            print(prompt)
+            _summary = try await claude.prompt(prompt)
         } catch {
             _summary = "Error: \(error)\n\nAPI Key prefix: \(String(apiKey.prefix(10)))..."
         }
+        print(_summary)
     }
 
     func processMarkdown(_ markdown: String) -> [Text] {

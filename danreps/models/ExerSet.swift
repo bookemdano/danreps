@@ -160,12 +160,12 @@ struct ExerSet : Codable
     }
     func DaySummary(date: Date) -> String {
         let items = ExerItems.filter { $0.GetSetCount(date: date) > 0 }
-        var rv:[String] = []
+        var rv:[String] = [SetItem.getCsvHeader()]
+        
         for item in items {
-            rv.append("\(item.Name) - \(item.GetSetCount(date: date))")
             let sets = item.GetSetsOn(date: date)
             for set in sets {
-                rv.append("\(set.getJournalString(itemName: item.Name))")
+                rv.append(set.getCsv(itemName: item.Name))
             }
         }
         return rv.joined(separator: "\n")
