@@ -30,6 +30,15 @@ struct ExerSet : Codable
         
         Version = other.Version
         CoachPrompt = other.CoachPrompt
+        
+        if DayItems == nil {
+            DayItems = []
+        }
+        if (other.DayItems == nil) {
+            return
+        }
+        DayItems!.removeAll(keepingCapacity: false)
+        DayItems!.append(contentsOf: other.DayItems!)
     }
     func GetCoachPrompt() -> String{
         if (CoachPrompt == nil) {
@@ -38,7 +47,7 @@ struct ExerSet : Codable
         return CoachPrompt!
     }
     func DefaultCoachPrompt() -> String{
-        return "This is what I did today for my workout. Tell me how I did and score it out of 10"
+        return "This is my workout. Tell me how I did and score it out of 10. Don't use tables."
     }
 
     mutating func UpdateVersion()

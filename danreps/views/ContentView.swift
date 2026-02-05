@@ -225,16 +225,20 @@ struct ContentView: View {
         if (_end == nil) {
             return "-"
         }
-        let timespan = _end!.timeIntervalSince(Date())
-        if (timespan <= 0) {
-            return "00:00"
+        
+        // TODO make timer keep going after 0 with a different color
+        var timespan = _end!.timeIntervalSince(Date())
+        var char = "-";
+        if (timespan < 0) {
+            timespan = Date().timeIntervalSince(_end!)
+            char = "+"
         }
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = [.minute, .second]
         formatter.unitsStyle = .positional
         formatter.zeroFormattingBehavior = .pad
 
-        return formatter.string(from: timespan)!
+        return char + formatter.string(from: timespan)!
     }
     func startTimer(seconds: Double) {
         _timer?.invalidate() // Invalidate existing timer if running
@@ -244,10 +248,6 @@ struct ContentView: View {
         _timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             let remainingTime = _end?.timeIntervalSince(Date()) ?? 0
             _countdownString = CountdownString()
-            if remainingTime <= 0 {
-                //Alert()  // only works in foreground, dnotice only works in background
-                _timer?.invalidate() // Stop when countdown reaches 0
-            }
         }
     }
     func Alert() {
@@ -285,6 +285,16 @@ struct ContentView: View {
             startTimer(seconds: Double(_exerSet.Interval ?? 60))
         }
         ExerPersist.SaveSync(_exerSet)
+    }
+    func TimerColor() -> Color {
+        
+        if (_end == nil) {
+            return .white
+        }
+        if (_end! > Date()){
+            return .green
+        }
+        return .orange
     }
     func GetExerItem(_ id: UUID) -> ExerItem{
         return _exerSet.GetItem(id: id)
@@ -358,6 +368,7 @@ struct ContentView: View {
             let claude = ClaudeService()
             let prompt = "\(_exerSet.GetCoachPrompt()) \(workoutData)"
             print(prompt)
+            UIPasteboard.general.string = workoutData
             _summary = try await claude.prompt(prompt)
 
             // Save the coaching string to the ExerSet
@@ -377,8 +388,13 @@ struct ContentView: View {
             var text = Text("")
             let currentLine = line
 
+            // Handle markdown tables (lines with pipes)
+            if currentLine.contains("|") {
+                text = Text(currentLine)
+                    .font(.system(.body, design: .monospaced))
+            }
             // Handle headers
-            if currentLine.hasPrefix("### ") {
+            else if currentLine.hasPrefix("### ") {
                 text = Text(currentLine.replacingOccurrences(of: "### ", with: ""))
                     .font(.title3)
                     .bold()
