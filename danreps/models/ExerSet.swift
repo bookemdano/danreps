@@ -134,6 +134,33 @@ struct ExerSet : Codable
 
         ExerItems[idx].Sets = sets
     }
+    func GetGroupsExceptAll() -> [String] {
+        var rv = [String]()
+        ExerItems.forEach { item in
+            item.Groups?.forEach{ group in
+                if (!rv.contains(group)) {
+                    rv.append(group)
+                }
+            }
+        }
+        return rv.sorted()
+    }
+    mutating func RemoveGroup(_ group: String) {
+        for i in ExerItems.indices {
+            ExerItems[i].Groups?.removeAll(where: { $0 == group })
+        }
+    }
+    mutating func ToggleExerciseGroup(exerciseId: UUID, group: String) {
+        guard let idx = ExerItems.firstIndex(where: { $0.id == exerciseId }) else { return }
+        if ExerItems[idx].Groups == nil {
+            ExerItems[idx].Groups = []
+        }
+        if ExerItems[idx].Groups!.contains(group) {
+            ExerItems[idx].Groups!.removeAll(where: { $0 == group })
+        } else {
+            ExerItems[idx].Groups!.append(group)
+        }
+    }
     func ExerItemsByLastDone(group: String) -> [ExerItem] {
         if (group.uppercased() == "ALL") {
             return ExerItems.sorted { $0.GetLastSet().Timestamp > $1.GetLastSet().Timestamp }

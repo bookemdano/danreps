@@ -65,6 +65,16 @@ struct ExerPersist {
             await SaveAsync(exerSet)
         }
     }
+    static func ToggleExerciseGroup(exerciseId: UUID, group: String) async {
+        var exerSet = await Read()
+        exerSet.ToggleExerciseGroup(exerciseId: exerciseId, group: group)
+        await SaveAsync(exerSet)
+    }
+    static func RemoveGroup(_ group: String) async {
+        var exerSet = await Read()
+        exerSet.RemoveGroup(group)
+        await SaveAsync(exerSet)
+    }
     static func Remove(id: UUID) async
     {
         var exerSet = await Read()

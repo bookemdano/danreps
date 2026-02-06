@@ -76,6 +76,9 @@ struct MaintView: View {
                 }
             }
 
+            NavigationLink(destination: GroupManagementView()) {
+                Text("Manage Groups").bold()
+            }
             NavigationLink(destination: ExerItemView(exerItem: ExerItem(Name: "", Notes: "", PerSide: false), history: nil, onDone: {onDone()})) {
                 Text("New Item").bold()
             }
