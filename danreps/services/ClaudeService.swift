@@ -27,7 +27,7 @@ class ClaudeService {
 
         // Prepare the request body
         let requestBody: [String: Any] = [
-            "model": "claude-opus-4-5",
+            "model": "claude-sonnet-4-5",
             "max_tokens": 1024,
             "messages": [
                 [

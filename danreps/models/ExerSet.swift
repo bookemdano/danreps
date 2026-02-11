@@ -195,7 +195,7 @@ struct ExerSet : Codable
                 entries.append(set.getJournalString(itemName: item.Name))
             }
         }
-        return entries.sorted()
+        return entries.sorted(by: >)
     }
     func DaySummary(date: Date) -> String {
         let items = ExerItems.filter { $0.GetSetCount(date: date) > 0 }
@@ -240,6 +240,8 @@ struct ExerSet : Codable
         var timestamp = date
         if (date.dateOnly == Date().dateOnly) {
             timestamp = Date()  // include time
+        } else {
+            timestamp.addTimeInterval(23 * 60 * 60)
         }
         if (ExerItems[idx].isDuration()) {
             ExerItems[idx].Sets?.append(SetItem(Span: set.Span, Units: set.Units, Timestamp: timestamp))
