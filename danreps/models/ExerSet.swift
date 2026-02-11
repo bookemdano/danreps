@@ -31,14 +31,9 @@ struct ExerSet : Codable
         Version = other.Version
         CoachPrompt = other.CoachPrompt
         
-        if DayItems == nil {
-            DayItems = []
+        if other.DayItems != nil {
+            DayItems = other.DayItems
         }
-        if (other.DayItems == nil) {
-            return
-        }
-        DayItems!.removeAll(keepingCapacity: false)
-        DayItems!.append(contentsOf: other.DayItems!)
     }
     func GetCoachPrompt() -> String{
         if (CoachPrompt == nil) {
