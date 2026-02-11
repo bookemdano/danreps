@@ -17,6 +17,7 @@ struct MaintView: View {
     @State private var _showingAlert = false
     @State private var _deleteItem: String = ""
     @State private var _showAPIKeySettings = false
+    @State private var _showCoachPrompt = false
     @State private var _rapid: Bool = ContentView.GetRapid()
 
     var body: some View {
@@ -43,18 +44,41 @@ struct MaintView: View {
             }
             Spacer()
             HStack{
-                TextField("...", text: $_coachPrompt)
-                Button("💾"){
-                    _exerSet.CoachPrompt = _coachPrompt
-                    save()
-                }.font(.system(size: 24))
-                Button("🔄"){
-                    _coachPrompt = _exerSet.DefaultCoachPrompt()
-                }.font(.system(size: 24))
+                Button(action: { _showCoachPrompt = true }) {
+                    Text(_coachPrompt.isEmpty ? "Coach prompt..." : _coachPrompt)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .foregroundColor(_coachPrompt.isEmpty ? .gray : .primary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
                 Button("🔑"){
                     _showAPIKeySettings = true
                 }.font(.system(size: 24))
-     }
+            }
+            .sheet(isPresented: $_showCoachPrompt) {
+                VStack {
+                    Text("Coach Prompt")
+                        .font(.headline)
+                        .padding(.top)
+                    TextEditor(text: $_coachPrompt)
+                        .frame(minHeight: 150)
+                        .border(Color.gray)
+                        .padding(.horizontal)
+                    HStack {
+                        Button("🔄 Reset") {
+                            _coachPrompt = _exerSet.DefaultCoachPrompt()
+                        }
+                        Spacer()
+                        Button("💾 Save") {
+                            _exerSet.CoachPrompt = _coachPrompt
+                            save()
+                            _showCoachPrompt = false
+                        }
+                    }
+                    .padding()
+                    Spacer()
+                }
+            }
             HStack{
                 Toggle("Rapid", isOn: $_rapid).onChange(of: _rapid) { _, newValue in
                     ContentView.SetRapid(newValue)
