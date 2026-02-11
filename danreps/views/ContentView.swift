@@ -119,13 +119,6 @@ struct ContentView: View {
                     ChangeGroup(newValue)
                 }
                 .fixedSize()
-                Toggle("R", isOn: $_rapid).onChange(of: _rapid) { newValue, _ in
-                    ContentView.SetRapid(newValue)
-                    if newValue == false {
-                        stopTimer()
-                    }
-                }
-                .fixedSize()
                 Button("😴"){
                     DNotices.requestNotificationPermission()
         
@@ -189,6 +182,7 @@ struct ContentView: View {
                 Refresh()
             }
             .onAppear {
+                _rapid = ContentView.GetRapid()
                 Refresh()
             }
         }

@@ -17,6 +17,7 @@ struct MaintView: View {
     @State private var _showingAlert = false
     @State private var _deleteItem: String = ""
     @State private var _showAPIKeySettings = false
+    @State private var _rapid: Bool = ContentView.GetRapid()
 
     var body: some View {
         NavigationStack{
@@ -55,11 +56,16 @@ struct MaintView: View {
                 }.font(.system(size: 24))
      }
             HStack{
-                Text("Wait(secs): ")
+                Toggle("Rapid", isOn: $_rapid).onChange(of: _rapid) { _, newValue in
+                    ContentView.SetRapid(newValue)
+                }
+                .fixedSize()
                 Spacer()
+                Text("Wait(secs): ")
                 TextField("Wait(secs)", text: $_wait)
                     .keyboardType(.numberPad)
                     .background(Color.yellow.opacity(0.2))
+                    .frame(width: 60)
                     .onChange(of: _wait, initial: false) { n, newValue in
                         _exerSet.Interval = Int(newValue) ?? 60
                         _wait = newValue
