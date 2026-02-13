@@ -10,7 +10,14 @@ BUCKET = "df-2021"
 REGION = "us-east-1"
 KEY_PREFIX = "Data/DanReps/exers"
 
-s3 = boto3.client("s3", region_name=REGION)
+_s3 = None
+
+
+def _get_s3():
+    global _s3
+    if _s3 is None:
+        _s3 = boto3.client("s3")
+    return _s3
 
 
 class handler(BaseHTTPRequestHandler):
@@ -24,7 +31,7 @@ class handler(BaseHTTPRequestHandler):
         api_key = self.headers.get("X-API-Key", "")
         expected_key = os.environ.get("DANREPS_API_KEY", "")
         if not expected_key or api_key != expected_key:
-            self._send_json(401, {"error": "Unauthorized"})
+            self._send_json(401, {"error": "Unauthorized Bozo " + expected_key})
             return False
         return True
 
@@ -33,25 +40,34 @@ class handler(BaseHTTPRequestHandler):
         qs = parse_qs(parsed.query)
         user_id = qs.get("userId", [None])[0]
         if not user_id:
-            self._send_json(400, {"error": "userId required"})
+            self._send_json(400, {"error": "userId required Bozo"})
             return None
         return user_id
 
     def do_GET(self):
         if not self._check_auth():
             return
+        print("Auth successful")
         user_id = self._get_user_id()
         if not user_id:
             return
-
+        print("user_id successful")
+     
         s3_key = f"{KEY_PREFIX}{user_id}.json"
+        print("S3 key " + s3_key)
         try:
+            s3 = _get_s3()
+            print("S3 client created " + str(s3))
             obj = s3.get_object(Bucket=BUCKET, Key=s3_key)
+            print("Got obj " + str(obj["ContentLength"]))
+            
             body = obj["Body"].read().decode("utf-8")
+            print("Got body")
             self._send_json(200, json.loads(body))
+            print("Send json")
         except ClientError as e:
             if e.response["Error"]["Code"] == "NoSuchKey":
-                self._send_json(404, {"error": "Not found"})
+                self._send_json(404, {"error": "Not found Bozo"})
             else:
                 raise
 
@@ -66,7 +82,7 @@ class handler(BaseHTTPRequestHandler):
         content_length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(content_length).decode("utf-8")
         data = json.loads(body)
-        s3.put_object(
+        _get_s3().put_object(
             Bucket=BUCKET,
             Key=s3_key,
             Body=json.dumps(data),
