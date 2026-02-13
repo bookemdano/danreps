@@ -1,0 +1,75 @@
+import json
+import os
+from http.server import BaseHTTPRequestHandler
+from urllib.parse import parse_qs, urlparse
+
+import boto3
+from botocore.exceptions import ClientError
+
+BUCKET = "df-2021"
+REGION = "us-east-1"
+KEY_PREFIX = "Data/DanReps/exers"
+
+s3 = boto3.client("s3", region_name=REGION)
+
+
+class handler(BaseHTTPRequestHandler):
+    def _send_json(self, status_code, body):
+        self.send_response(status_code)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(json.dumps(body).encode("utf-8"))
+
+    def _check_auth(self):
+        api_key = self.headers.get("X-API-Key", "")
+        expected_key = os.environ.get("DANREPS_API_KEY", "")
+        if not expected_key or api_key != expected_key:
+            self._send_json(401, {"error": "Unauthorized"})
+            return False
+        return True
+
+    def _get_user_id(self):
+        parsed = urlparse(self.path)
+        qs = parse_qs(parsed.query)
+        user_id = qs.get("userId", [None])[0]
+        if not user_id:
+            self._send_json(400, {"error": "userId required"})
+            return None
+        return user_id
+
+    def do_GET(self):
+        if not self._check_auth():
+            return
+        user_id = self._get_user_id()
+        if not user_id:
+            return
+
+        s3_key = f"{KEY_PREFIX}{user_id}.json"
+        try:
+            obj = s3.get_object(Bucket=BUCKET, Key=s3_key)
+            body = obj["Body"].read().decode("utf-8")
+            self._send_json(200, json.loads(body))
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "NoSuchKey":
+                self._send_json(404, {"error": "Not found"})
+            else:
+                raise
+
+    def do_PUT(self):
+        if not self._check_auth():
+            return
+        user_id = self._get_user_id()
+        if not user_id:
+            return
+
+        s3_key = f"{KEY_PREFIX}{user_id}.json"
+        content_length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(content_length).decode("utf-8")
+        data = json.loads(body)
+        s3.put_object(
+            Bucket=BUCKET,
+            Key=s3_key,
+            Body=json.dumps(data),
+            ContentType="application/json",
+        )
+        self._send_json(200, {"success": True})

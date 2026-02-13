@@ -63,3 +63,4 @@ fastlane/test_output
 utils/AwsStash.swift
 danreps/utils/AwsStash.swift
 .DS_Store
+.vercel
