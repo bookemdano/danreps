@@ -8,34 +8,25 @@ import Foundation
 import DanSwiftLib
 
 struct ExerPersist {
-    static let _iop = IOPAws(app: "DanReps")
-
-    static func JsonName() -> String{
-        var userID = IOPAws.getUserID()
-        if (userID == nil){
-            userID = "Template"
-        }
-        return "exers\(userID!).json"
-    }
-    
     static func Read() async -> ExerSet{
-        
-        let content = await _iop.Read(dir: "Data", file: JsonName())
-        if (content.isEmpty){
+        guard let userID = IOPAws.getUserID() else {
             return ExerSet.GetDefault()
         }
-        
-        let jsonString = content
-        if let jsonData = jsonString.data(using: .utf8) {
-            do {
+
+        do {
+            let content = try await ApiService.shared.read(userId: userID)
+            if content.isEmpty {
+                return ExerSet.GetDefault()
+            }
+            if let jsonData = content.data(using: .utf8) {
                 var rv = try JSONDecoder().decode(ExerSet.self, from: jsonData)
                 if (rv.Version != ExerSet.CurrentVersion) {
                     rv.UpdateVersion()
                 }
                 return rv
-            } catch {
-                print("Failed to decode JSON: \(error)")
             }
+        } catch {
+            print("Failed to read/decode JSON: \(error)")
         }
         return ExerSet.GetDefault()
     }
@@ -46,7 +37,7 @@ struct ExerPersist {
             let groups = csvGroups
                 .split(separator: ",")
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            
+
             let index = exerSet.ExerItems.firstIndex(where: { $0.id == id})
             if (index == nil)
             {
@@ -90,19 +81,17 @@ struct ExerPersist {
     }
     static func SaveAsync(_ exerSet: ExerSet) async
     {
-        if (IOPAws.getUserID() == nil) {
+        guard let userID = IOPAws.getUserID() else {
             print("Don't save without userID")
             return
         }
         do {
             let jsonData = try JSONEncoder().encode(exerSet)
             if let jsonString = String(data: jsonData, encoding: .utf8) {
-                if (await _iop.Write(dir: "Data", file: JsonName(), content: jsonString) == false){
-                    print("Write failed!")
-                }
+                try await ApiService.shared.write(userId: userID, json: jsonString)
             }
         } catch {
-            print("Error serializing JSON: \(error)")
+            print("Error saving: \(error)")
         }
     }
 }

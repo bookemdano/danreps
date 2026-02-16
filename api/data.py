@@ -36,8 +36,10 @@ class handler(BaseHTTPRequestHandler):
 
     def _check_auth(self):
         api_key = self.headers.get("X-API-Key", "")
-        expected_key = os.environ.get("DANREPS_API_KEY", "")
-        if not expected_key or api_key != expected_key:
+        parsed = urlparse(self.path)
+        qs = parse_qs(parsed.query)
+        user_id = qs.get("userId", [None])[0]
+        if not user_id or api_key != user_id:
             self._send_json(401, {"error": "Unauthorized Bozo"})
             return False
         return True

@@ -19,6 +19,7 @@ struct MaintView: View {
     @State private var _showAPIKeySettings = false
     @State private var _showCoachPrompt = false
     @State private var _rapid: Bool = ContentView.GetRapid()
+    @State private var _devApi: Bool = ApiService.isDevMode()
 
     var body: some View {
         NavigationStack{
@@ -95,6 +96,16 @@ struct MaintView: View {
                         _wait = newValue
                         save()
                     }
+            }
+            HStack{
+                Toggle("Dev API", isOn: $_devApi).onChange(of: _devApi) { _, newValue in
+                    ApiService.setDevMode(newValue)
+                }
+                .fixedSize()
+                Spacer()
+                Text(ApiService.shared.baseURL)
+                    .font(.caption)
+                    .foregroundColor(.gray)
             }
             if (!_welcomed) {
                 SignInWithAppleButtonView($_welcomed)
