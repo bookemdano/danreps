@@ -4,27 +4,10 @@ class ApiService {
     static let shared = ApiService()
 
     private static let prodURL = "https://danreps.vercel.app"
-    private static let devURL = "http://localhost:3000"
     private static let baseURLKey = "ApiBaseURL"
-    private static let devModeKey = "ApiDevMode"
-
-    var baseURL: String {
-        if ApiService.isDevMode() {
-            return ApiService.devURL
-        }
-        return ApiService.prodURL
-    }
-
-    static func isDevMode() -> Bool {
-        return UserDefaults.standard.bool(forKey: devModeKey)
-    }
-
-    static func setDevMode(_ on: Bool) {
-        UserDefaults.standard.set(on, forKey: devModeKey)
-    }
 
     func read(userId: String) async throws -> String {
-        let url = URL(string: "\(baseURL)/api/data?userId=\(userId)")!
+        let url = URL(string: "\(ApiService.prodURL)/api/data?userId=\(userId)")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue(userId, forHTTPHeaderField: "X-API-Key")
@@ -38,7 +21,7 @@ class ApiService {
     }
 
     func write(userId: String, json: String) async throws {
-        let url = URL(string: "\(baseURL)/api/data?userId=\(userId)")!
+        let url = URL(string: "\(ApiService.prodURL)/api/data?userId=\(userId)")!
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.setValue(userId, forHTTPHeaderField: "X-API-Key")

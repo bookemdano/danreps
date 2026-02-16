@@ -64,3 +64,4 @@ utils/AwsStash.swift
 danreps/utils/AwsStash.swift
 .DS_Store
 .vercel
+.env*.local
