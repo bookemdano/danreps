@@ -16,7 +16,14 @@ _s3 = None
 def _get_s3():
     global _s3
     if _s3 is None:
-        _s3 = boto3.client("s3")
+        key = os.environ.get("S3_ACCESS_KEY_ID")
+        secret = os.environ.get("S3_SECRET_ACCESS_KEY")
+        if key and secret:
+            _s3 = boto3.client("s3", region_name=REGION,
+                               aws_access_key_id=key,
+                               aws_secret_access_key=secret)
+        else:
+            _s3 = boto3.client("s3", region_name=REGION)
     return _s3
 
 
@@ -31,7 +38,7 @@ class handler(BaseHTTPRequestHandler):
         api_key = self.headers.get("X-API-Key", "")
         expected_key = os.environ.get("DANREPS_API_KEY", "")
         if not expected_key or api_key != expected_key:
-            self._send_json(401, {"error": "Unauthorized Bozo " + expected_key})
+            self._send_json(401, {"error": "Unauthorized Bozo"})
             return False
         return True
 
