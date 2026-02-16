@@ -125,9 +125,7 @@ struct ContentView: View {
                     AddNote("Rest for 60")
                     startTimer(seconds: 60)
                 }.font(.system(size: 36))
-                Button("↩️"){
-                    Undo()
-                }
+         
                 NavigationLink(destination: MaintView()) {
                     Text("⚙️")
                         .font(.system(size: 36))
@@ -137,17 +135,22 @@ struct ContentView: View {
                         await GetClaudeSummary()
                     }
                 }.font(.system(size: 36))
-                Button("🆑"){
-                    _showClearConfirmation = true
-                }.font(.system(size: 36))
-                .confirmationDialog("Are you sure?", isPresented: $_showClearConfirmation, titleVisibility: .visible) {
-                    Button("Clear Date?", role: .destructive) {
-                        ClearDay(_date)
+                if Self.isDebuggerAttached() {
+                    Button("🆑"){
+                        _showClearConfirmation = true
+                    }.font(.system(size: 36))
+                    .confirmationDialog("Are you sure?", isPresented: $_showClearConfirmation, titleVisibility: .visible) {
+                        Button("Clear Date?", role: .destructive) {
+                            ClearDay(_date)
+                        }
+                        Button("Cancel", role: .cancel) {}
+                    } message: {
+                        Text("This action cannot be undone. Deleting means it never was.")
                     }
-                    Button("Cancel", role: .cancel) {}
-                } message: {
-                    Text("This action cannot be undone. Deleting means it never was.")
                 }
+                Button("↩️"){
+                    Undo()
+                }.font(.system(size: 36))
                 .sheet(isPresented: $_showSummary) {
                     VStack {
                         Text("AI Coach")
@@ -340,8 +343,6 @@ struct ContentView: View {
             return
         }
 
-        let workoutData = _exerSet.DaySummary(date: _date)
-
         guard let apiKey = KeychainService.shared.getAPIKey() else {
             _summary = "Please set your API key using the 🔑 button"
             _showSummary = true
@@ -355,23 +356,80 @@ struct ContentView: View {
             return
         }
 
-        _summary = "Loading summary..."
+        _summary = "Building athlete profile..."
         _showSummary = true
 
-        do {
-            let claude = ClaudeService()
-            let prompt = "\(_exerSet.GetCoachPrompt()) \(workoutData)"
-            print(prompt)
-            UIPasteboard.general.string = workoutData
-            _summary = try await claude.prompt(prompt)
+        let claude = ClaudeService()
 
-            // Save the coaching string to the ExerSet
+        do {
+            // Step 1: Generate or retrieve cached athlete profile
+            let profileJSON = try await generateOrGetProfile(claude: claude)
+
+            // Step 2: Get coaching review with profile context
+            _summary = "Getting coaching review..."
+            let workoutData = _exerSet.DaySummary(date: _date)
+
+            let coachingSystemMessage = """
+            You are an experienced strength and conditioning coach reviewing a client's workout session. \
+            You have their athlete profile with training history and trends. \
+            Provide specific, actionable feedback based on their profile data and today's session. \
+            Use markdown formatting. Don't use tables.
+            """
+
+            let userMessage = """
+            ATHLETE PROFILE:
+            \(profileJSON)
+
+            TODAY'S WORKOUT:
+            \(workoutData)
+
+            COACHING REQUEST:
+            \(_exerSet.GetCoachPrompt())
+            """
+            
+            _summary = try await claude.prompt(
+                userMessage,
+                systemMessage: coachingSystemMessage
+            )
+
             _exerSet.setCoachingString(for: _date, coaching: _summary)
             ExerPersist.SaveSync(_exerSet)
         } catch {
             _summary = "Error: \(error)\n\nAPI Key prefix: \(String(apiKey.prefix(10)))..."
         }
-        print(_summary)
+    }
+
+    func generateOrGetProfile(claude: ClaudeService) async throws -> String {
+        // Return cached profile if generated today
+        if let existing = _exerSet.AthleteProfile,
+           existing.GeneratedDate.dateOnly == Date().dateOnly {
+            print("DEBUG: Using cached athlete profile")
+            return existing.ProfileJSON
+        }
+
+        let rawProfileData = _exerSet.ComputeProfileData()
+        print("DEBUG: Raw profile data:\n\(rawProfileData)")
+
+        let systemMessage = """
+        You are a sports data analyst. Compress the following raw training data into a concise \
+        athlete profile JSON. Include training frequency, volume trends by group, estimated 1RMs, \
+        last 4 session summaries, and progression notes. Return ONLY valid JSON, no explanation.
+        """
+
+        let profileJSON = try await claude.prompt(
+            rawProfileData,
+            systemMessage: systemMessage,
+            model: "claude-haiku-4-5-20251001",
+            maxTokens: 2048
+        )
+
+        _exerSet.AthleteProfile = AthleteProfile(
+            GeneratedDate: Date(),
+            ProfileJSON: profileJSON
+        )
+        ExerPersist.SaveSync(_exerSet)
+
+        return profileJSON
     }
 
     func processMarkdown(_ markdown: String) -> [Text] {
@@ -436,6 +494,15 @@ struct ContentView: View {
         }
 
         return result
+    }
+
+    static func isDebuggerAttached() -> Bool {
+        var info = kinfo_proc()
+        var size = MemoryLayout<kinfo_proc>.stride
+        var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
+        let result = sysctl(&mib, UInt32(mib.count), &info, &size, nil, 0)
+        guard result == 0 else { return false }
+        return (info.kp_proc.p_flag & P_TRACED) != 0
     }
 
 }

@@ -15,6 +15,7 @@ struct ExerSet : Codable
     var CoachPrompt: String?
     var Version: String?
     var DayItems: [DayItem]?
+    var AthleteProfile: AthleteProfile?
     static public let CurrentVersion = "1.0.1"  // added Sets to Items
     enum CodingKeys: String, CodingKey {
         case ExerItems
@@ -22,6 +23,7 @@ struct ExerSet : Codable
         case Version
         case CoachPrompt
         case DayItems
+        case AthleteProfile
     }
     mutating func Refresh(other: ExerSet, date: Date){
         ExerItems.removeAll(keepingCapacity: false)
@@ -34,6 +36,7 @@ struct ExerSet : Codable
         if other.DayItems != nil {
             DayItems = other.DayItems
         }
+        AthleteProfile = other.AthleteProfile
     }
     func GetCoachPrompt() -> String{
         if (CoachPrompt == nil) {
@@ -226,6 +229,104 @@ struct ExerSet : Codable
         }
     }
     
+    func ComputeProfileData() -> String {
+        var lines: [String] = []
+        let cal = Calendar.current
+        let today = Date()
+        guard let fourWeeksAgo = cal.date(byAdding: .day, value: -28, to: today) else {
+            return "No data available"
+        }
+
+        // Collect all sets from the last 4 weeks grouped by date
+        var dateSets: [Date: [(String, SetItem, Bool)]] = [:] // date -> [(name, set, perSide)]
+        for item in ExerItems {
+            guard let sets = item.Sets else { continue }
+            for set in sets where set.Timestamp >= fourWeeksAgo {
+                let d = set.Timestamp.dateOnly
+                dateSets[d, default: []].append((item.Name, set, item.PerSide))
+            }
+        }
+
+        let sortedDates = dateSets.keys.sorted()
+        let sessionsPerWeek = sortedDates.isEmpty ? 0.0 : Float(sortedDates.count) / 4.0
+        lines.append("TRAINING FREQUENCY: \(sortedDates.count) sessions in 4 weeks (\(String(format: "%.1f", sessionsPerWeek))/week)")
+
+        // Volume per group per week
+        let groups = GetGroupsExceptAll()
+        if !groups.isEmpty {
+            lines.append("\nVOLUME BY GROUP (sets per week, last 4 weeks):")
+            for group in groups {
+                let groupItems = ExerItems.filter { $0.Groups?.contains(group) == true }
+                var weeklyCounts: [Int] = []
+                for weekOffset in (0..<4).reversed() {
+                    guard let weekStart = cal.date(byAdding: .day, value: -(weekOffset + 1) * 7, to: today),
+                          let weekEnd = cal.date(byAdding: .day, value: -weekOffset * 7, to: today) else { continue }
+                    var count = 0
+                    for item in groupItems {
+                        guard let sets = item.Sets else { continue }
+                        count += sets.filter { $0.Timestamp >= weekStart && $0.Timestamp < weekEnd }.count
+                    }
+                    weeklyCounts.append(count)
+                }
+                lines.append("  \(group): \(weeklyCounts.map(String.init).joined(separator: ", "))")
+            }
+        }
+
+        // Estimated 1RMs for weight exercises
+        lines.append("\nESTIMATED 1RMs:")
+        for item in ExerItems where !item.isDuration() {
+            guard let sets = item.Sets, !sets.isEmpty else { continue }
+            var best1RM = 0
+            var bestSet: SetItem?
+            for set in sets {
+                guard let w = set.Weight, let r = set.Reps, w > 0, r > 0 else { continue }
+                let e1rm = Int(Double(w) * (1.0 + Double(r) / 30.0))
+                if e1rm > best1RM {
+                    best1RM = e1rm
+                    bestSet = set
+                }
+            }
+            if let bs = bestSet, let bw = bs.Weight, let br = bs.Reps {
+                lines.append("  \(item.Name): \(best1RM)lbs (from \(bw)x\(br))")
+            }
+        }
+
+        // Last 4 session summaries
+        lines.append("\nLAST 4 SESSIONS:")
+        for date in sortedDates.suffix(4) {
+            guard let daySets = dateSets[date] else { continue }
+            let timestamps = daySets.map { $0.1.Timestamp }
+            let minT = timestamps.min() ?? date
+            let maxT = timestamps.max() ?? date
+            let duration = Int(maxT.timeIntervalSince(minT) / 60)
+            let totalVol = daySets.reduce(0) { total, entry in
+                let multiplier = entry.2 ? 2 : 1
+                return total + entry.1.totalWeight() * multiplier
+            }
+            let exercises = Array(Set(daySets.map { $0.0 })).sorted()
+            lines.append("  \(date.dateOnly): \(daySets.count) sets, ~\(duration)min, \(totalVol)lbs vol")
+            lines.append("    Exercises: \(exercises.joined(separator: ", "))")
+        }
+
+        // Progression notes
+        lines.append("\nPROGRESSION NOTES:")
+        for item in ExerItems where !item.isDuration() {
+            guard let sets = item.Sets, sets.count >= 2 else { continue }
+            guard let lastSet = sets.last,
+                  let w = lastSet.Weight, let r = lastSet.Reps, w > 0, r > 0 else { continue }
+            let lastE1RM = Int(Double(w) * (1.0 + Double(r) / 30.0))
+            let allMax = sets.compactMap { s -> Int? in
+                guard let sw = s.Weight, let sr = s.Reps, sw > 0, sr > 0 else { return nil }
+                return Int(Double(sw) * (1.0 + Double(sr) / 30.0))
+            }.max() ?? 0
+            if lastE1RM >= allMax && allMax > 0 {
+                lines.append("  \(item.Name): PR - \(w)x\(r) (e1RM: \(lastE1RM)lbs)")
+            }
+        }
+
+        return lines.joined(separator: "\n")
+    }
+
     // crush
     mutating func Crush(id: UUID, date: Date, set: SetItem)
     {

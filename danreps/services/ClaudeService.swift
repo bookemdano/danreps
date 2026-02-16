@@ -13,22 +13,26 @@ class ClaudeService {
     private static var cache: [String: String] = [:]
 
 
-    func prompt(_ prompt: String) async throws -> String {
-        // Check cache first
-        if let cachedResponse = Self.cache[prompt] {
+    func prompt(_ prompt: String, systemMessage: String? = nil,
+                model: String? = nil, maxTokens: Int? = nil) async throws -> String {
+        let actualModel = model ?? "claude-sonnet-4-5"
+        let actualMaxTokens = maxTokens ?? 1024
+
+        // Check cache first (include model in key)
+        let cacheKey = "\(actualModel):\(prompt)"
+        if let cachedResponse = Self.cache[cacheKey] {
             print("DEBUG: Returning cached response for prompt")
             return cachedResponse
         }
-
 
         guard let apiKey = KeychainService.shared.getAPIKey() else {
             throw ClaudeError.noAPIKey
         }
 
         // Prepare the request body
-        let requestBody: [String: Any] = [
-            "model": "claude-sonnet-4-5",
-            "max_tokens": 1024,
+        var requestBody: [String: Any] = [
+            "model": actualModel,
+            "max_tokens": actualMaxTokens,
             "messages": [
                 [
                     "role": "user",
@@ -36,6 +40,10 @@ class ClaudeService {
                 ]
             ]
         ]
+
+        if let system = systemMessage {
+            requestBody["system"] = system
+        }
 
         guard let jsonData = try? JSONSerialization.data(withJSONObject: requestBody) else {
             throw ClaudeError.invalidRequest
@@ -49,7 +57,7 @@ class ClaudeService {
         request.setValue(apiVersion, forHTTPHeaderField: "anthropic-version")
         request.httpBody = jsonData
 
-        print("DEBUG: Sending request to Anthropic API...")
+        print("DEBUG: Sending request to Anthropic API (\(actualModel))...")
 
         // Make the request
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -75,10 +83,10 @@ class ClaudeService {
             throw ClaudeError.invalidResponse
         }
 
-        print("DEBUG: Successfully got response from Claude")
+        print("DEBUG: Successfully got response from Claude (\(actualModel))")
 
         // Cache the response before returning
-        Self.cache[prompt] = text
+        Self.cache[cacheKey] = text
 
         return text
     }
