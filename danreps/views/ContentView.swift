@@ -90,6 +90,12 @@ struct ContentView: View {
                     }.background(BackgroundColor(item.id))
                 }
             }
+            if (_end != nil) {
+                Text(_countdownString)
+                    .font(.system(size: 48, weight: .bold)) // Large Text
+                    .foregroundColor(.green) // Green Color
+                    .padding()
+            }
             let notes = _exerSet.GetJournal(date: _date)
 
             ScrollView {
@@ -100,13 +106,7 @@ struct ContentView: View {
                     .padding(.vertical, 4)
             }
             .frame(maxHeight: _exerSet.JournalHeight(notes: notes))
-            if (_end != nil) {
-                Text(_countdownString)
-                    .font(.system(size: 48, weight: .bold)) // Large Text
-                    .foregroundColor(.green) // Green Color
-                    .padding()
-            }
-     
+          
   
             HStack {
                 Picker("Groups", selection: $_group) {
