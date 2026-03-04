@@ -264,6 +264,9 @@ struct ContentView: View {
     {
         _onDeckId = item.id
         _set = item.GetLastSet()
+        if item.isDuration(), let span = _set.Span {
+            _spanString = String(format: "%g", span)
+        }
     }
     func Crush(_ id: UUID)
     {
@@ -335,7 +338,27 @@ struct ContentView: View {
         }
     }
 
+    func buildCoachingPrompt(profileJSON: String, includeCoach: Bool) -> String {
+        let workoutData = _exerSet.DaySummary(date: _date)
+        var coach:String = ""
+        if (includeCoach) {
+            coach = "\nCOACHING REQUEST:\n\(_exerSet.GetCoachPrompt())"
+        }
+        return """
+        ATHLETE PROFILE:
+        \(profileJSON)
+
+        TODAY'S WORKOUT:
+        \(workoutData)
+        \(coach)
+        """
+    }
+
     func GetClaudeSummary() async {
+        // Always copy the prompt to clipboard
+        let profileJSON = _exerSet.AthleteProfile?.ProfileJSON ?? "No profile generated yet"
+        UIPasteboard.general.string = buildCoachingPrompt(profileJSON: profileJSON, includeCoach: false)
+
         // Check if we already have coaching for this date
         if let cachedCoaching = _exerSet.getCoachingString(for: _date) {
             _summary = cachedCoaching
@@ -363,11 +386,10 @@ struct ContentView: View {
 
         do {
             // Step 1: Generate or retrieve cached athlete profile
-            let profileJSON = try await generateOrGetProfile(claude: claude)
+            let freshProfileJSON = try await generateOrGetProfile(claude: claude)
 
             // Step 2: Get coaching review with profile context
             _summary = "Getting coaching review..."
-            let workoutData = _exerSet.DaySummary(date: _date)
 
             let coachingSystemMessage = """
             You are an experienced strength and conditioning coach reviewing a client's workout session. \
@@ -376,17 +398,9 @@ struct ContentView: View {
             Use markdown formatting. Don't use tables.
             """
 
-            let userMessage = """
-            ATHLETE PROFILE:
-            \(profileJSON)
+            let userMessage = buildCoachingPrompt(profileJSON: freshProfileJSON, includeCoach: true)
+            UIPasteboard.general.string = userMessage
 
-            TODAY'S WORKOUT:
-            \(workoutData)
-
-            COACHING REQUEST:
-            \(_exerSet.GetCoachPrompt())
-            """
-            
             _summary = try await claude.prompt(
                 userMessage,
                 systemMessage: coachingSystemMessage
@@ -427,7 +441,6 @@ struct ContentView: View {
             GeneratedDate: Date(),
             ProfileJSON: profileJSON
         )
-        ExerPersist.SaveSync(_exerSet)
 
         return profileJSON
     }

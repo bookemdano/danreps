@@ -82,9 +82,11 @@ struct ExerItem : Codable, Hashable, Identifiable, Comparable
         if (Sets == nil) { return [] }
         return Sets!.sorted{$0.Timestamp < $1.Timestamp}.map{ set in
             if (isDuration()) {
-                (set.Timestamp, "@\(set.Span!)\(set.Units!.lowercased())")
+                let spanStr = String(format: "%g", set.Span ?? 0)
+                let unitsStr = (set.Units ?? "").lowercased()
+                return (set.Timestamp, "@\(spanStr)\(unitsStr)")
             } else {
-                (set.Timestamp, "@\(set.Weight!)lbs x \(set.Reps!)")
+                return (set.Timestamp, "@\(set.Weight ?? 0)lbs x \(set.Reps ?? 0)")
             }
         }
     }
