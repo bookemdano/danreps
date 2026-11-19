@@ -65,3 +65,5 @@ danreps/utils/AwsStash.swift
 .DS_Store
 .vercel
 .env*.local
+mcp_server/.venv/
+mcp_server/__pycache__/

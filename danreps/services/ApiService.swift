@@ -8,6 +8,8 @@ class ApiService {
 
     func read(userId: String) async throws -> String {
         let url = URL(string: "\(ApiService.prodURL)/api/data?userId=\(userId)")!
+        print("url ")
+        print(url)
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue(userId, forHTTPHeaderField: "X-API-Key")

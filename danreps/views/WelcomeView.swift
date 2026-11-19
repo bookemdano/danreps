@@ -13,6 +13,7 @@ struct WelcomeView: View {
         VStack {
             Text("Welcome!")
             SignInWithAppleButtonView($showMainView)
+                .frame(maxWidth: 375)
             Button(action: {
                 showMainView = true
             }){

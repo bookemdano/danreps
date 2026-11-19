@@ -98,6 +98,7 @@ struct MaintView: View {
             }
             if (!_welcomed) {
                 SignInWithAppleButtonView($_welcomed)
+                    .frame(maxWidth: 375)
             } else {
                 Button(action: {
                     signOut()
